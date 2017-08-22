@@ -1,3 +1,9 @@
+vdr-plugin-live (2.3.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release (Closes: #853699)
+
+ -- Tobias Grimm <etobi@debian.org>  Tue, 22 Aug 2017 21:25:51 +0200
+
 vdr-plugin-live (0.3.0+git20160123-1) unstable; urgency=medium
 
   * New Upstream Snapshot (commit 869ac69)
