@@ -1,5 +1,6 @@
 Upstream Homepage:
-    http://live.vdr-developer.org/
+    https://projects.vdr-developer.org/projects/plg-live (current)
+    http://live.vdr-developer.org/ (old)
 
 Upstream Authors:
     Thomas Keil <tkeil@datacrystal.de>
@@ -7,6 +8,7 @@ Upstream Authors:
     Dieter Hametner <dh+vdr@gekrumbel.de>
     Christian Wieninger <cwieninger@gmx.de>
     Michael Brueckner <vdr@gekrumbel.de>
+    Jasmin Jessich <jasmin@anw.at>
 
 Debian Maintainers:
     Tobias Grimm <etobi@debian.org>
@@ -14,8 +16,8 @@ Debian Maintainers:
     Thomas Schmidt <tschmidt@debian.org>
 
 Copyright:
-    (C) 2007 - 2012 Thomas Keil, Sascha Volkenandt, Dieter Hametner,
-                    Christian Wieninger, Michael Brueckner
+    (C) 2007 - 2017 Thomas Keil, Sascha Volkenandt, Dieter Hametner,
+                    Christian Wieninger, Michael Brueckner, Jasmin Jessich
     (C) 2003 - 2006 Tommi Maekitalo (Tntnet httpd)
 
 Copyright (DOM Tooltip JavaScript library):
