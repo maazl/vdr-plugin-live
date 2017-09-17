@@ -1,3 +1,4 @@
-version=3
+version=4
 
-http://live.vdr-developer.org/downloads/vdr-live-(.*)\.tar\.gz
+#http://live.vdr-developer.org/downloads/vdr-live-(.*)\.tar\.gz
+https://projects.vdr-developer.org/git/vdr-plugin-live.git .*/release_(\d+)-(\d+)-(\d+)\.tar\.bz2
