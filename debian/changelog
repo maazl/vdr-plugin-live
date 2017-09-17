@@ -1,8 +1,11 @@
-vdr-plugin-live (2.3.1-2) UNRELEASED; urgency=medium
+vdr-plugin-live (2.3.1-2) unstable; urgency=medium
 
-  * 
+  * Updated debian/watch to point to new git repository
+  * Updated debian/copyright
+  * Dropped vdr-plugin-live-dbg - migration to automatically created debug
+    symbol package
 
- -- Tobias Grimm <etobi@debian.org>  Sun, 17 Sep 2017 22:37:10 +0200
+ -- Tobias Grimm <etobi@debian.org>  Sun, 17 Sep 2017 23:16:40 +0200
 
 vdr-plugin-live (2.3.1-1) unstable; urgency=medium
 
