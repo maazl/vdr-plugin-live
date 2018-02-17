@@ -8,8 +8,8 @@ Build-Depends: debhelper (>= 10), vdr-dev (>= 2.3.8), pkg-config,
  libssl-dev, gettext, libpcre3-dev
 Standards-Version: 3.9.8
 Homepage: http://live.vdr-developer.org
-Vcs-Git: git://git.debian.org/git/pkg-vdr-dvb/vdr-plugin-live.git
-Vcs-Browser: http://git.debian.org/?p=pkg-vdr-dvb/vdr-plugin-live.git
+Vcs-Git: https://salsa.debian.org/vdr-team/vdr-plugin-live.git
+Vcs-Browser: https://salsa.debian.org/vdr-team/vdr-plugin-live
 
 Package: vdr-plugin-live
 Architecture: any
