@@ -20,7 +20,7 @@ set -e
 
 case "$1" in
     configure)
-        chown -R vdr:vdr /var/lib/vdr/plugins/live
+        chown vdr:vdr /var/lib/vdr/plugins/live
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
