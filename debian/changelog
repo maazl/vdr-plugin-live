@@ -1,3 +1,12 @@
+vdr-plugin-live (2.3.1-3) unstable; urgency=medium
+
+  * VCS moved to salsa.debian.org
+  * Replaced priority extra with optional
+  * Build-depend on vdr-dev (>= 2.4.0)
+  * Don't do a recursive chown on /var/lib/vdr/plugins/live
+
+ -- Tobias Grimm <etobi@debian.org>  Sun, 15 Apr 2018 19:23:15 +0200
+
 vdr-plugin-live (2.3.1-2) unstable; urgency=medium
 
   * Updated debian/watch to point to new git repository
