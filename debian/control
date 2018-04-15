@@ -1,6 +1,6 @@
 Source: vdr-plugin-live
 Section: video
-Priority: extra
+Priority: optional
 Maintainer: Debian VDR Team <pkg-vdr-dvb-devel@lists.alioth.debian.org>
 Uploaders: Thomas Schmidt <tschmidt@debian.org>, Tobias Grimm <etobi@debian.org>, Thomas Günther <tom@toms-cafe.de>
 Build-Depends: debhelper (>= 10), vdr-dev (>= 2.3.8), pkg-config,
