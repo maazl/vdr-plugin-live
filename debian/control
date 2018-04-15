@@ -3,7 +3,7 @@ Section: video
 Priority: optional
 Maintainer: Debian VDR Team <pkg-vdr-dvb-devel@lists.alioth.debian.org>
 Uploaders: Thomas Schmidt <tschmidt@debian.org>, Tobias Grimm <etobi@debian.org>, Thomas Günther <tom@toms-cafe.de>
-Build-Depends: debhelper (>= 10), vdr-dev (>= 2.3.8), pkg-config,
+Build-Depends: debhelper (>= 10), vdr-dev (>= 2.4.0), pkg-config,
  libtntnet-dev (>= 1.6.0.1-1.1), libcxxtools-dev (>= 1.4.3.6-1.1),
  libssl-dev, gettext, libpcre3-dev
 Standards-Version: 3.9.8
