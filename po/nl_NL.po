@@ -52,10 +52,10 @@ msgstr ""
 msgid "Timer already defined"
 msgstr ""
 
-msgid "Timers are being edited - try again later"
+msgid "Timer not defined"
 msgstr ""
 
-msgid "Timer not defined"
+msgid "Timers are being edited - try again later"
 msgstr ""
 
 msgid "On archive DVD No."
@@ -130,46 +130,392 @@ msgstr "Serie's opnemen"
 msgid "conflicts"
 msgstr "Serie's opnemen"
 
-msgid "Couldn't aquire access to channels, please try again later."
+msgid "Electronic program guide information"
+msgstr ""
+
+msgid "Couldn't find recording or no recordings available"
+msgstr ""
+
+msgid "Error aquiring schedules lock"
+msgstr ""
+
+msgid "Error aquiring schedules"
+msgstr ""
+
+msgid "%b %d %y"
+msgstr ""
+
+msgid "Searchtimers"
 msgstr ""
 
 msgid "Sorry, no permission. Please contact your administrator!"
 msgstr ""
 
-msgid "Couldn't find recording. Maybe you mistyped your request?"
+msgid "Expression"
 msgstr ""
 
-msgid "Please set a name for the recording!"
+msgid "Channel"
 msgstr ""
 
-msgid "Cannot copy, rename or move the recording."
+msgid "Starts between"
 msgstr ""
 
-msgid "Edit recording"
+msgid "Toggle search timer actions (in)active"
+msgstr ""
+
+msgid "Browse search timer results"
+msgstr ""
+
+msgid "Edit search timer"
+msgstr ""
+
+msgid "Delete this search timer?"
+msgstr ""
+
+msgid "Delete search timer"
+msgstr ""
+
+msgid "New search timer"
+msgstr ""
+
+msgid "Trigger search timer update"
+msgstr ""
+
+msgid "Wrong username or password"
+msgstr ""
+
+msgid "Login"
+msgstr ""
+
+msgid "VDR Live Login"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Remote Control"
+msgstr ""
+
+msgid "Couldn't aquire access to channels, please try again later."
+msgstr ""
+
+msgid "Couldn't find channel or no channels available. Maybe you mistyped your request?"
+msgstr ""
+
+msgid "Selection"
+msgstr ""
+
+#, fuzzy
+msgid "Snapshot interval"
+msgstr "interval"
+
+msgid "Stop"
+msgstr ""
+
+#, c-format
+msgid "%a, %x"
+msgstr ""
+
+msgid "What's running on"
+msgstr ""
+
+msgid "at"
+msgstr ""
+
+msgid "What's on next?"
+msgstr ""
+
+msgid "Favorites"
+msgstr ""
+
+msgid "Click to view details."
+msgstr ""
+
+msgid "View the schedule of this channel"
+msgstr ""
+
+msgid " - "
+msgstr ""
+
+msgid "more"
+msgstr ""
+
+msgid "Now"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "What's on"
+msgstr ""
+
+msgid "Details view"
+msgstr ""
+
+msgid "List view"
+msgstr ""
+
+msgid "Find more at the Internet Movie Database."
+msgstr ""
+
+msgid "Stream this channel into browser."
+msgstr ""
+
+msgid "Stream this recording into media player."
+msgstr ""
+
+msgid "Record this"
+msgstr ""
+
+msgid "Edit timer"
+msgstr ""
+
+msgid "loading data"
+msgstr ""
+
+msgid "an error occured!"
+msgstr ""
+
+msgid "Request succeeded!"
+msgstr ""
+
+msgid "Request failed!"
+msgstr ""
+
+msgid "Sunday"
+msgstr ""
+
+msgid "Monday"
+msgstr ""
+
+msgid "Tuesday"
+msgstr ""
+
+msgid "Wednesday"
+msgstr ""
+
+msgid "Thursday"
+msgstr ""
+
+msgid "Friday"
+msgstr ""
+
+msgid "Saturday"
+msgstr ""
+
+#. TRANSLATORS: only adjust the ordering and separators, don't translate the m's, d's and y's
+msgid "mm/dd/yyyy"
+msgstr ""
+
+msgid "January"
+msgstr ""
+
+msgid "February"
+msgstr ""
+
+msgid "March"
+msgstr ""
+
+msgid "April"
+msgstr ""
+
+msgid "May"
+msgstr ""
+
+msgid "June"
+msgstr ""
+
+msgid "July"
+msgstr ""
+
+msgid "August"
+msgstr ""
+
+msgid "September"
+msgstr ""
+
+msgid "October"
+msgstr ""
+
+msgid "November"
+msgstr ""
+
+msgid "December"
+msgstr ""
+
+msgid "retrieving status ..."
+msgstr ""
+
+msgid "Toggle updates on/off."
+msgstr ""
+
+msgid "stop playback"
+msgstr ""
+
+msgid "resume playback"
+msgstr ""
+
+msgid "pause playback"
+msgstr ""
+
+msgid "fast rewind"
+msgstr ""
+
+msgid "fast forward"
+msgstr ""
+
+msgid "previous channel"
+msgstr ""
+
+msgid "next channel"
+msgstr ""
+
+msgid "No server response!"
+msgstr ""
+
+msgid "Failed to update infobox!"
+msgstr ""
+
+msgid "Switch to this channel."
+msgstr ""
+
+msgid "Search for repeats."
+msgstr ""
+
+msgid "Authors"
+msgstr ""
+
+msgid "Project Idea"
+msgstr ""
+
+msgid "Webserver"
+msgstr ""
+
+msgid "Current Maintainer"
+msgstr ""
+
+msgid "Project leader"
+msgstr ""
+
+msgid "Content"
+msgstr ""
+
+msgid "Graphics"
+msgstr ""
+
+msgid "Information"
+msgstr ""
+
+msgid "LIVE version"
+msgstr ""
+
+msgid "VDR version"
+msgstr ""
+
+msgid "Features"
+msgstr ""
+
+msgid "active"
+msgstr ""
+
+msgid "required"
+msgstr ""
+
+msgid "Homepage"
+msgstr ""
+
+msgid "Bugs and suggestions"
+msgstr ""
+
+msgid "If you encounter any bugs or would like to suggest new features, please use our bugtracker"
+msgstr ""
+
+msgid "What's on?"
+msgstr ""
+
+msgid "MultiSchedule"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Recordings"
+msgstr ""
+
+msgid "Web-Streaming"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Your attention is required"
+msgstr ""
+
+msgid "React"
+msgstr ""
+
+msgid "Dismiss"
+msgstr ""
+
+msgid "Couldn't find user. Maybe you mistyped your request?"
+msgstr ""
+
+msgid "This user name is already in use!"
+msgstr ""
+
+#, fuzzy
+msgid "Edit user"
+msgstr "Serie's opnemen"
+
+msgid "New user"
 msgstr ""
 
 msgid "Name"
 msgstr ""
 
-msgid "Directory"
-msgstr "Directory"
-
-msgid "Delete resume information"
+msgid "User rights"
 msgstr ""
 
-msgid "Delete marks information"
-msgstr ""
+#, fuzzy
+msgid "Edit setup"
+msgstr "Serie's opnemen"
 
-msgid "Copy only"
-msgstr ""
+#, fuzzy
+msgid "Add or edit timers"
+msgstr "Gebruik als zoek timer"
 
-msgid "Short description"
-msgstr ""
+#, fuzzy
+msgid "Delete timers"
+msgstr "Serie's opnemen"
 
-msgid "Description"
-msgstr ""
+#, fuzzy
+msgid "Delete recordings"
+msgstr "Serie's opnemen"
 
-msgid "Auxiliary info"
+#, fuzzy
+msgid "Use remote menu"
+msgstr "Gebruik tijd"
+
+#, fuzzy
+msgid "Start replay"
+msgstr "Start voor"
+
+#, fuzzy
+msgid "Switch channel"
+msgstr "tot kanaal"
+
+#, fuzzy
+msgid "Add or edit search timers"
+msgstr "Gebruik als zoek timer"
+
+#, fuzzy
+msgid "Delete search timers"
+msgstr "Serie's opnemen"
+
+msgid "Edit recordings"
 msgstr ""
 
 msgid "Save"
@@ -178,17 +524,95 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Search results"
+msgstr ""
+
+msgid "No search results"
+msgstr ""
+
+msgid "%A, %b %d %Y"
+msgstr ""
+
+msgid "Couldn't find timer. Maybe you mistyped your request?"
+msgstr ""
+
+msgid "Please set a title for the timer!"
+msgstr ""
+
+msgid "New timer"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "Server"
+msgstr ""
+
+msgid "Directory"
+msgstr "Directory"
+
+msgid "Weekday"
+msgstr ""
+
+msgid "Use VPS"
+msgstr ""
+
+msgid "ERROR:"
+msgstr ""
+
+#, fuzzy
+msgid "Deleted recording:"
+msgstr "Serie's opnemen"
+
+msgid "List of recordings"
+msgstr ""
+
+msgid "No recordings found"
+msgstr ""
+
+msgid "Delete selected"
+msgstr ""
+
+#, no-c-format
+msgid "%a,"
+msgstr ""
+
+#. TRANSLATORS: recording duration format HH:MM
+#, c-format
+msgid "(%d:%02d)"
+msgstr ""
+
+msgid "Sort by name"
+msgstr ""
+
+msgid "Sort by date"
+msgstr ""
+
+msgid "Filter"
+msgstr ""
+
+msgid "Look in recordings titles and subtitles for the given string and display only the matching ones. You may also use perl compatible regular expressions (PCRE)."
+msgstr ""
+
+msgid "Expand all folders"
+msgstr ""
+
+msgid "Collapse all folders"
+msgstr ""
+
+msgid "Delete this recording from hard disc!"
+msgstr ""
+
+msgid "Edit recording"
+msgstr ""
+
+msgid "play this recording."
+msgstr ""
+
+msgid "No schedules available for this channel"
+msgstr ""
+
 msgid "Couldn't find searchtimer. Maybe you mistyped your request?"
-msgstr ""
-
-#. TRANSLATORS: only adjust the ordering and separators, don't translate the m's, d's and y's
-msgid "mm/dd/yyyy"
-msgstr ""
-
-msgid "Edit search timer"
-msgstr ""
-
-msgid "New search timer"
 msgstr ""
 
 msgid "Search text too short - use anyway?"
@@ -227,10 +651,10 @@ msgstr "Idem case"
 msgid "Search in"
 msgstr ""
 
-msgid "Title"
+msgid "Episode"
 msgstr ""
 
-msgid "Episode"
+msgid "Description"
 msgstr ""
 
 msgid "Use extended EPG info"
@@ -287,31 +711,7 @@ msgstr "Max. duur"
 msgid "Use day of week"
 msgstr "Gebruik dag van de week"
 
-msgid "Monday"
-msgstr ""
-
-msgid "Tuesday"
-msgstr ""
-
-msgid "Wednesday"
-msgstr ""
-
-msgid "Thursday"
-msgstr ""
-
-msgid "Friday"
-msgstr ""
-
-msgid "Saturday"
-msgstr ""
-
-msgid "Sunday"
-msgstr ""
-
 msgid "Use blacklists"
-msgstr ""
-
-msgid "Selection"
 msgstr ""
 
 msgid "all"
@@ -386,9 +786,6 @@ msgstr ""
 msgid "Compare"
 msgstr ""
 
-msgid "Use VPS"
-msgstr ""
-
 msgid "Auto-delete search timer"
 msgstr ""
 
@@ -404,419 +801,25 @@ msgstr ""
 msgid "Test"
 msgstr ""
 
-msgid "Couldn't find timer. Maybe you mistyped your request?"
-msgstr ""
-
-msgid "Please set a title for the timer!"
-msgstr ""
-
-msgid "Edit timer"
-msgstr ""
-
-msgid "New timer"
-msgstr ""
-
-msgid "Weekday"
-msgstr ""
-
-msgid "Couldn't find user. Maybe you mistyped your request?"
-msgstr ""
-
-msgid "This user name is already in use!"
+msgid "No timer defined"
 msgstr ""
 
 #, fuzzy
-msgid "Edit user"
+msgid "Timer is recording."
 msgstr "Serie's opnemen"
 
-msgid "New user"
+msgid "Timer is active."
 msgstr ""
 
-msgid "Password"
+msgid "Toggle timer active/inactive"
 msgstr ""
 
-msgid "User rights"
+msgid "Delete timer"
 msgstr ""
 
 #, fuzzy
-msgid "Edit setup"
+msgid "Timer conflicts"
 msgstr "Serie's opnemen"
-
-#, fuzzy
-msgid "Add or edit timers"
-msgstr "Gebruik als zoek timer"
-
-#, fuzzy
-msgid "Delete timers"
-msgstr "Serie's opnemen"
-
-#, fuzzy
-msgid "Delete recordings"
-msgstr "Serie's opnemen"
-
-#, fuzzy
-msgid "Use remote menu"
-msgstr "Gebruik tijd"
-
-#, fuzzy
-msgid "Start replay"
-msgstr "Start voor"
-
-#, fuzzy
-msgid "Switch channel"
-msgstr "tot kanaal"
-
-#, fuzzy
-msgid "Add or edit search timers"
-msgstr "Gebruik als zoek timer"
-
-#, fuzzy
-msgid "Delete search timers"
-msgstr "Serie's opnemen"
-
-msgid "Edit recordings"
-msgstr ""
-
-msgid "Electronic program guide information"
-msgstr ""
-
-msgid "Couldn't find recording or no recordings available"
-msgstr ""
-
-msgid "Error aquiring schedules lock"
-msgstr ""
-
-msgid "Error aquiring schedules"
-msgstr ""
-
-msgid "%b %d %y"
-msgstr ""
-
-msgid "Page error"
-msgstr ""
-
-msgid "playing recording"
-msgstr ""
-
-msgid "no epg info for current event!"
-msgstr ""
-
-msgid "no epg info for current channel!"
-msgstr ""
-
-msgid "no current channel!"
-msgstr ""
-
-msgid "error retrieving status info!"
-msgstr ""
-
-msgid "%I:%M:%S %p"
-msgstr ""
-
-msgid "Wrong username or password"
-msgstr ""
-
-msgid "Login"
-msgstr ""
-
-msgid "VDR Live Login"
-msgstr ""
-
-msgid "User"
-msgstr ""
-
-msgid "What's on?"
-msgstr ""
-
-msgid "MultiSchedule"
-msgstr ""
-
-msgid "Search"
-msgstr ""
-
-msgid "Searchtimers"
-msgstr ""
-
-msgid "Recordings"
-msgstr ""
-
-msgid "Remote Control"
-msgstr ""
-
-msgid "Logout"
-msgstr ""
-
-msgid "Your attention is required"
-msgstr ""
-
-msgid "React"
-msgstr ""
-
-msgid "Dismiss"
-msgstr ""
-
-msgid "Now"
-msgstr ""
-
-msgid "%A, %b %d %Y"
-msgstr ""
-
-msgid "Time"
-msgstr ""
-
-msgid "Switch to this channel."
-msgstr ""
-
-msgid "Search for repeats."
-msgstr ""
-
-msgid "Click to view details."
-msgstr ""
-
-msgid "more"
-msgstr ""
-
-msgid "Channel"
-msgstr ""
-
-msgid "Find more at the Internet Movie Database."
-msgstr ""
-
-msgid "Stream this channel into browser."
-msgstr ""
-
-msgid "Stream this recording into browser."
-msgstr ""
-
-msgid "Record this"
-msgstr ""
-
-msgid "loading data"
-msgstr ""
-
-msgid "an error occured!"
-msgstr ""
-
-msgid "Request succeeded!"
-msgstr ""
-
-msgid "Request failed!"
-msgstr ""
-
-msgid "January"
-msgstr ""
-
-msgid "February"
-msgstr ""
-
-msgid "March"
-msgstr ""
-
-msgid "April"
-msgstr ""
-
-msgid "May"
-msgstr ""
-
-msgid "June"
-msgstr ""
-
-msgid "July"
-msgstr ""
-
-msgid "August"
-msgstr ""
-
-msgid "September"
-msgstr ""
-
-msgid "October"
-msgstr ""
-
-msgid "November"
-msgstr ""
-
-msgid "December"
-msgstr ""
-
-msgid "retrieving status ..."
-msgstr ""
-
-msgid "Toggle updates on/off."
-msgstr ""
-
-msgid "stop playback"
-msgstr ""
-
-msgid "resume playback"
-msgstr ""
-
-msgid "pause playback"
-msgstr ""
-
-msgid "fast rewind"
-msgstr ""
-
-msgid "fast forward"
-msgstr ""
-
-msgid "previous channel"
-msgstr ""
-
-msgid "next channel"
-msgstr ""
-
-msgid "No server response!"
-msgstr ""
-
-msgid "Failed to update infobox!"
-msgstr ""
-
-msgid "Authors"
-msgstr ""
-
-msgid "Project Idea"
-msgstr ""
-
-msgid "Webserver"
-msgstr ""
-
-msgid "Current Maintainer"
-msgstr ""
-
-msgid "Project leader"
-msgstr ""
-
-msgid "Content"
-msgstr ""
-
-msgid "Graphics"
-msgstr ""
-
-msgid "Information"
-msgstr ""
-
-msgid "LIVE version"
-msgstr ""
-
-msgid "VDR version"
-msgstr ""
-
-msgid "Features"
-msgstr ""
-
-msgid "active"
-msgstr ""
-
-msgid "required"
-msgstr ""
-
-msgid "Homepage"
-msgstr ""
-
-msgid "Bugs and suggestions"
-msgstr ""
-
-msgid "If you encounter any bugs or would like to suggest new features, please use our bugtracker"
-msgstr ""
-
-msgid "ERROR:"
-msgstr ""
-
-#, fuzzy
-msgid "Deleted recording:"
-msgstr "Serie's opnemen"
-
-msgid "List of recordings"
-msgstr ""
-
-msgid "No recordings found"
-msgstr ""
-
-msgid "Delete selected"
-msgstr ""
-
-#, no-c-format
-msgid "%a,"
-msgstr ""
-
-#. TRANSLATORS: recording duration format HH:MM
-#, c-format
-msgid "(%d:%02d)"
-msgstr ""
-
-msgid "Sort by name"
-msgstr ""
-
-msgid "Sort by date"
-msgstr ""
-
-msgid "Filter"
-msgstr ""
-
-msgid "Look in recordings titles and subtitles for the given string and display only the matching ones. You may also use perl compatible regular expressions (PCRE)."
-msgstr ""
-
-msgid "Expand all folders"
-msgstr ""
-
-msgid "Collapse all folders"
-msgstr ""
-
-msgid "Delete this recording from hard disc!"
-msgstr ""
-
-msgid "play this recording."
-msgstr ""
-
-msgid "Couldn't find channel or no channels available. Maybe you mistyped your request?"
-msgstr ""
-
-#, fuzzy
-msgid "Snapshot interval"
-msgstr "interval"
-
-msgid "Stop"
-msgstr ""
-
-msgid "No schedules available for this channel"
-msgstr ""
-
-msgid "Search settings"
-msgstr ""
-
-msgid "Extended search"
-msgstr ""
-
-msgid "no"
-msgstr ""
-
-msgid "Search results"
-msgstr ""
-
-msgid "No search results"
-msgstr ""
-
-msgid "Expression"
-msgstr ""
-
-msgid "Starts between"
-msgstr ""
-
-msgid "Toggle search timer actions (in)active"
-msgstr ""
-
-msgid "Browse search timer results"
-msgstr ""
-
-msgid "Delete this search timer?"
-msgstr ""
-
-msgid "Delete search timer"
-msgstr ""
-
-msgid "Trigger search timer update"
-msgstr ""
 
 msgid "Please set login and password!"
 msgstr ""
@@ -845,10 +848,25 @@ msgstr ""
 msgid "Allow video streaming"
 msgstr ""
 
+msgid "Web-Streaming h264"
+msgstr ""
+
+msgid "Web-Streaming HEVC"
+msgstr ""
+
+msgid "Web-Streaming MPEG2"
+msgstr ""
+
+msgid "Web-Streaming others"
+msgstr ""
+
 msgid "Streamdev server port"
 msgstr ""
 
 msgid "Streamdev stream type"
+msgstr ""
+
+msgid "Mark new recordings"
 msgstr ""
 
 msgid "Add links to IMDb"
@@ -878,33 +896,59 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
-#, fuzzy
-msgid "Timer conflicts"
-msgstr "Serie's opnemen"
-
-#, fuzzy
-msgid "No timer conflicts"
-msgstr "Serie's opnemen"
-
-#, fuzzy
-msgid "Timer has a conflict."
-msgstr "Serie's opnemen"
-
-msgid "Timer is active."
+msgid "playing recording"
 msgstr ""
 
-msgid "Toggle timer active/inactive"
+msgid "no epg info for current event!"
 msgstr ""
 
-msgid "Delete timer"
+msgid "no epg info for current channel!"
 msgstr ""
 
-msgid "No timer defined"
+msgid "no current channel!"
 msgstr ""
 
-#, fuzzy
-msgid "Timer is recording."
-msgstr "Serie's opnemen"
+msgid "error retrieving status info!"
+msgstr ""
+
+msgid "%I:%M:%S %p"
+msgstr ""
+
+msgid "Couldn't find recording. Maybe you mistyped your request?"
+msgstr ""
+
+msgid "Please set a name for the recording!"
+msgstr ""
+
+msgid "Cannot copy, rename or move the recording."
+msgstr ""
+
+msgid "Delete resume information"
+msgstr ""
+
+msgid "Delete marks information"
+msgstr ""
+
+msgid "Copy only"
+msgstr ""
+
+msgid "Short description"
+msgstr ""
+
+msgid "Auxiliary info"
+msgstr ""
+
+msgid "Search settings"
+msgstr ""
+
+msgid "Extended search"
+msgstr ""
+
+msgid "no"
+msgstr ""
+
+msgid "Time"
+msgstr ""
 
 msgid "Users"
 msgstr ""
@@ -913,63 +957,19 @@ msgstr ""
 msgid "Delete user"
 msgstr "Serie's opnemen"
 
-msgid "VLC: live video stream"
+msgid "Page error"
 msgstr ""
 
-msgid "VLC: play recording"
+#, fuzzy
+msgid "No timer conflicts"
+msgstr "Serie's opnemen"
+
+msgid "local"
 msgstr ""
 
-msgid "Play"
-msgstr ""
-
-msgid "Sound on"
-msgstr ""
-
-msgid "Sound off"
-msgstr ""
-
-msgid "Fullscreen"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "VLC media URL"
-msgstr ""
-
-#, c-format
-msgid "%a, %x"
-msgstr ""
-
-msgid "What's running on"
-msgstr ""
-
-msgid "at"
-msgstr ""
-
-msgid "What's on next?"
-msgstr ""
-
-msgid "Favorites"
-msgstr ""
-
-msgid "View the schedule of this channel"
-msgstr ""
-
-msgid " - "
-msgstr ""
-
-msgid "Next"
-msgstr ""
-
-msgid "What's on"
-msgstr ""
-
-msgid "Details view"
-msgstr ""
-
-msgid "List view"
-msgstr ""
+#, fuzzy
+msgid "Timer has a conflict."
+msgstr "Serie's opnemen"
 
 msgid "Live Interactive VDR Environment"
 msgstr ""

@@ -1,15 +1,23 @@
 #ifndef VDR_LIVE_TOOLS_H
 #define VDR_LIVE_TOOLS_H
 
+// uncomment to debug lock sequence 
+// #define DEBUG_LOCK
+
 // STL headers need to be before VDR tools.h (included by <vdr/channels.h>)
 #include <istream>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
 
-#ifndef __STL_CONFIG_H
+#if TNTVERSION >= 30000
+        #include <cxxtools/log.h>  // must be loaded before any vdr include because of duplicate macros (LOG_ERROR, LOG_DEBUG, LOG_INFO)
+        #include "cxxtools/serializationinfo.h"
+#endif
+
+#ifndef DISABLE_TEMPLATES_COLLIDING_WITH_STL
 // To get rid of the swap definition in vdr/tools.h
-# define __STL_CONFIG_H
+#define DISABLE_TEMPLATES_COLLIDING_WITH_STL
 #endif
 #include <vdr/channels.h>
 
@@ -21,15 +29,49 @@ std::ostream& operator<<( std::ostream& os, tChannelID const& id )
 	return os << *id.ToString();
 }
 
-namespace vdrlive {
 
+#if TNTVERSION >= 30000
+namespace cxxtools
+{
+	class SerializationInfo;
+
+	inline void operator<<= (cxxtools::SerializationInfo& si, const tChannelID& id)
+	{
+//		dsyslog("live: operator<<= called");
+	}
+
+	inline void operator>>= (const cxxtools::SerializationInfo& si, tChannelID& id)
+	{
+//		dsyslog("live: operator>>= called");
+	}
+}
+#endif
+
+
+namespace vdrlive {
+	extern const std::locale g_locale;
+	extern const std::collate<char>& g_collate_char;
+
+        void AppendHtmlEscaped(std::string &target, const char* s);
+        void AppendHtmlEscapedAndCorrectNonUTF8(std::string &target, const char *str);
+        void AppendCorrectNonUTF8(std::string &target, const char* s);
+
+        wint_t getNextUtfCodepoint(const char *&p);
+        int utf8CodepointIsValid(const char *p); // In case of invalid UTF8, return 0. Otherwise: Number of characters
+        wint_t Utf8ToUtf32(const char *&p, int len); // assumes, that uft8 validity checks have already been done. len must be provided. call utf8CodepointIsValid first
+	void AppendUtfCodepoint(std::string &target, wint_t codepoint);
+
+
+
+        void AppendDuration(std::string &target, char const* format, int hours, int minutes );
 	std::string FormatDuration( char const* format, int hours, int minutes );
 
+        void AppendDateTime(std::string &target, char const* format, time_t time );
 	std::string FormatDateTime( char const* format, time_t time );
 
 	std::string StringReplace( std::string const& text, std::string const& substring, std::string const& replacement );
 
-	std::vector< std::string > StringSplit( std::string const& text, char delimiter );
+	std::vector<std::string> StringSplit( std::string const& text, char delimiter );
 
 	int StringToInt( std::string const& string, int base = 10 );
 
@@ -69,7 +111,7 @@ namespace vdrlive {
 		bad_lexical_cast(): std::runtime_error( "bad lexical cast" ) {}
 	};
 
-	template< typename To, typename From >
+	template<typename To, typename From>
 	To lexical_cast( From const& from )
 	{
 		std::stringstream parser;
@@ -81,8 +123,8 @@ namespace vdrlive {
 		return result;
 	}
 
-	template< typename From >
-	std::string ConvertToString( From const& from, std::locale const& loc = std::locale() )
+	template<typename From>
+	std::string ConvertToString( From const& from, std::locale const& loc = g_locale )
 	{
 		std::ostringstream parser;
 		parser.imbue( loc );
@@ -96,7 +138,7 @@ namespace vdrlive {
 			typedef void (ReadLock::*safe_bool)() const;
 
 		public:
-            ReadLock(cRwLock& lock, int timeout = 100)
+            explicit ReadLock(cRwLock& lock, int timeout = 100)
                 : m_lock(lock)
                 , m_locked(false)
             {

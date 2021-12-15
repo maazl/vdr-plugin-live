@@ -14,38 +14,57 @@
 #include <vdr/videodir.h>
 
 #define MB_PER_MINUTE 25.75 // this is just an estimate!
+#include <string>
+std::string argList;
+std::string recoring_item;
+size_t max_length_recoring_item = 0;
 
 using namespace vdrlive;
-using namespace std;
 
 </%pre>
 <%args>
-	string sort;
-	string todel;
-	string diskinfo;
-	string filter;
-	string deletions[];
+	std::string sort;
+	std::string todel;
+	std::string diskinfo;
+	std::string filter;
+	std::string deletions[];
+        std::string flat;
 </%args>
 <%session scope="global">
 	bool logged_in(false);
 </%session>
-<%request scope="page">
-	string currentSort;
-	string deleteResult;
-	string currentFilter;
+
+<# scope="page" should be enough but does not work with tntnet 3.0 #>
+<%request scope="global">
+	std::string currentSort;
+	std::string deleteResult;
+	std::string currentFilter;
+	std::string currentFlat;
 </%request>
+
 <%include>page_init.eh</%include>
 <%cpp>
 if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 
+// sort dpends on old sort, an sort parameter
 currentSort = LiveSetup().GetLastSortingMode();
+if (currentSort.empty() ) currentSort = "nameasc";
 if (!sort.empty()) {
 	if (sort == "date")
 		currentSort = (currentSort == "dateasc") ? "datedesc" : "dateasc";
 	else if (sort == "name")
 		currentSort = (currentSort == "nameasc") ? "namedesc" : "nameasc";
+	else if (sort == "errors")
+                currentSort = (currentSort == "errorsasc") ? "errorsdesc" : "errorsasc";
+	else if (sort == "duplicates")
+		currentSort = sort;
 	LiveSetup().SetLastSortingMode(currentSort);
 }
+// flat defaults from sort, but can we overwritten
+if (currentSort == "errorsasc" || currentSort == "errorsdesc" || currentSort == "duplicates") currentFlat = "true";
+  else currentFlat = "false";
+if (! flat.empty() ) currentFlat = flat;
+
 currentFilter = filter;
 
 pageTitle = tr("Recordings");
@@ -56,14 +75,17 @@ if (!todel.empty()) {
 		throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
 	deletions.push_back(todel);
 }
+#if TNTVERSION >= 30000
+typedef std::vector<std::string> deletions_type;
+#endif
 for (deletions_type::const_iterator it = deletions.begin(); it != deletions.end(); ++it) {
 	if (cUser::CurrentUserHasRightTo(UR_DELRECS)) {
 		RemoveRecordingTask task(*it);
 		LiveTaskManager().Execute(task);
 		if (!task.Result())
-			deleteResult += string() + tr("ERROR:") + " " + task.Error() + "<br/>";
+			deleteResult += std::string() + tr("ERROR:") + " " + task.Error() + "<br/>";
 		else
-			deleteResult += string() + tr("Deleted recording:") + " " + StringReplace(task.RecName(), "~", "/") + "<br/>";
+			deleteResult += std::string() + tr("Deleted recording:") + " " + StringReplace(task.RecName(), "~", "/") + "<br/>";
 	}
 	else {
 		throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
@@ -134,7 +156,7 @@ diskinfo = cString::sprintf("%s %d%%  -  %2d:%02d %s", trVDR("Disk"), Percent, H
 		}
 		//--></script>
 	</head>
-	<body>
+	<body onload="adjustHeader()" onresize="adjustHeader()">
 		<& pageelems.logo &>
 <%cpp>
 if (!deleteResult.empty()) {
@@ -148,7 +170,7 @@ if (!deleteResult.empty()) {
 }
 </%cpp>
 		<div class="inhalt">
-			<div class="boxheader"><div><div><$ string(tr("List of recordings")) + " (" + diskinfo + ")" $></div></div></div>
+			<div class="boxheader"><div><div><$ std::string(tr("List of recordings")) + " (" + diskinfo + ")" $></div></div></div>
 <%cpp>
 #if VDRVERSNUM >= 20301
 			int rec_cnt;
@@ -191,14 +213,17 @@ if (!deleteResult.empty()) {
 	path[];
 	int level = 0;
 	int counter = 0;
-	string idHash = "";
+	std::string idHash = "";
 </%args>
 <%cpp>
+recoring_item.reserve(6000);
+// Max Buffer used: 5.636 bytes
 RecordingsTreePtr recordingsTree(LiveRecordingsManager()->GetRecordingsTree());
+std::list<RecordingsItemPtr> recItems;
+std::list<RecordingsItemPtr>::iterator recIter;
+if( currentFlat != "true" ) {
 RecordingsMap::iterator iter;
 RecordingsMap::iterator end = recordingsTree->end(path);
-list<RecordingsItemPtr> recItems;
-list<RecordingsItemPtr>::iterator recIter;
 
 for (iter = recordingsTree->begin(path); iter != end; ++iter) {
 	RecordingsItemPtr recItem = iter->second;
@@ -207,28 +232,43 @@ for (iter = recordingsTree->begin(path); iter != end; ++iter) {
 	}
 }
 if (currentSort == "namedesc")
-	recItems.sort(RecordingsItemPtrCompare::ByDescendingName);
-else
-	recItems.sort(RecordingsItemPtrCompare::ByAscendingName);
+	recItems.sort(RecordingsItemPtrCompare::ByDescendingNameDescSort);
+else if (currentSort == "nameasc")
+	recItems.sort(RecordingsItemPtrCompare::ByAscendingNameDescSort);
 for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 	RecordingsItemPtr recItem = *recIter;
 	counter++;
+
+	/* search trough directory for new recordings */
+        bool newR = false;
+	if ( LiveSetup().GetMarkNewRec() ) {
+           std::vector<std::string> p(path); 
+	   p.push_back(recItem->Name()); 
+	   newR = checkNew(recordingsTree, p);; 
+        }
 </%cpp>
 	<li class="recording">
-		<& rec_item_dir name=(recItem->Name()) level=(recItem->Level()) &>
+	<& rec_item_dir name=(recItem->Name()) level=(recItem->Level() ) newR=(newR ? "_new" : "") &>
 <%cpp>
 #if TNT_QUERYPARAMS_NO_BOOL
 		tnt::QueryParams recItemParams(qparam);
 #else
 		tnt::QueryParams recItemParams(qparam, false);
 #endif
+#if TNTVERSION >= 30000
+                typedef std::vector<std::string> path_type;
+#endif
 		for (path_type::const_iterator i = path.begin(); i != path.end(); ++i) {
 			recItemParams.add("path", *i);
 		}
+#if TNTVERSION >= 30000
+		recItemParams.add("path[]", recItem->Name());
+#else
 		recItemParams.add("path", recItem->Name());
-		recItemParams.add("level", lexical_cast<string, int>(level + 1));
+#endif
+		recItemParams.add("level", lexical_cast<std::string, int>(level + 1));
 		recItemParams.add("filter", filter);
-		string combinedId = recItem->Name() + "_";
+		std::string combinedId = recItem->Name() + "_";
 		combinedId += counter + "_" + level;
 		idHash = MD5Hash(combinedId);
 </%cpp>
@@ -247,35 +287,43 @@ for (iter = recordingsTree->begin(path); iter != end; ++iter) {
 		recItems.push_back(recItem);
 	}
 }
+} else {
+if (currentSort == "duplicates") {
+  addAllDuplicateRecordings(recItems, recordingsTree);
+} else {
+  addAllRecordings(recItems, recordingsTree, path);
+}
+}
 if (currentSort == "dateasc")
 	recItems.sort(RecordingsItemPtrCompare::ByAscendingDate);
 else if (currentSort == "datedesc")
 	recItems.sort(RecordingsItemPtrCompare::ByDescendingDate);
 else if (currentSort == "namedesc")
-	recItems.sort(RecordingsItemPtrCompare::ByDescendingName);
-else
-	recItems.sort(RecordingsItemPtrCompare::ByAscendingName);
+	recItems.sort(RecordingsItemPtrCompare::ByDescendingNameDescSort);
+else if (currentSort == "nameasc")
+	recItems.sort(RecordingsItemPtrCompare::ByAscendingNameDescSort);
+else if (currentSort == "errorsasc" || currentSort == "errorsdesc")
+	recItems.sort(RecordingsItemPtrCompare::ByDescendingRecordingErrors);
+
+argList.clear();
+argList.append("&sort=");
+argList.append(currentSort);
+argList.append("&filter=");
+argList.append(currentFilter);
 for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 		RecordingsItemPtr recItem = *recIter;
-		// xgettext:no-c-format
-		string day(FormatDateTime(tr("%a,"), recItem->StartTime()));
-		string dayLen(lexical_cast<string, int>(day.length() - 1) + ".25em;");
-		// TRANSLATORS: recording duration format HH:MM
-		string duration(recItem->Duration() < 0 ? "" : FormatDuration(tr("(%d:%02d)"), recItem->Duration() / 60, recItem->Duration() % 60));
-		string shortDescr(recItem->RecInfo()->ShortText() ? recItem->RecInfo()->ShortText() : "");
-		string description(recItem->RecInfo()->Description() ? recItem->RecInfo()->Description() : "");
-		string hint(tr("Click to view details."));
-		if (!shortDescr.empty()) hint = shortDescr + "<br />" + hint;
-		else if (!description.empty()) hint = description + "<br />" + hint;
+  recoring_item.clear();
+  recItem->AppendasHtml(recoring_item, currentFlat == "true", argList);
+  max_length_recoring_item = std::max(max_length_recoring_item, recoring_item.length() );
 #ifdef HAVE_LIBPCRECPP
-		pcrecpp::RE re(filter.c_str(), pcrecpp::UTF8());
-		if (filter.empty() || re.PartialMatch(recItem->Name()) || re.PartialMatch(shortDescr) || re.PartialMatch(description))
+		pcrecpp::RE re(filter.c_str(), pcrecpp::UTF8().set_caseless(true));
+		if (filter.empty() || re.PartialMatch(recItem->Name()) || re.PartialMatch(recItem->ShortText()?recItem->ShortText() : "" ) || re.PartialMatch(recItem->Description()?recItem->Description() : ""))
 #endif
 		{
 </%cpp>
-	<li class="recording">
-	   <& rec_item_file name=(recItem->Name()) level=(recItem->Level()) id=(recItem->Id()) day=(day) dayLen=(dayLen) startTime=(recItem->StartTime()) duration=(duration) hint=(hint) shortDescr=(shortDescr) archived=(RecordingsManager::GetArchiveDescr(recItem->Recording())) &>
-	</li>
+  <$$ recoring_item $>
+  <# Buffer used: <$ recoring_item.length() $> bytes
+  Max Buffer used: <$ max_length_recoring_item $> bytes #>
 <%cpp>
 		}
 }
@@ -286,10 +334,18 @@ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 
 <%def sort_options>
 <%cpp> { </%cpp>
-<a href="recordings.html?sort=name&filter=<? currentFilter != "" ? currentFilter ?>" alt="" /><$ tr("Sort by name") $></a>
+<a href="recordings.html?sort=name&filter=<? currentFilter != "" ? currentFilter ?>" /><$ tr("Sort by name") $></a>
 <span class="sep">|</span>
-<a href="recordings.html?sort=date&filter=<? currentFilter != "" ? currentFilter ?>" alt="" /><$ tr("Sort by date") $></a>
+<a href="recordings.html?sort=date&filter=<? currentFilter != "" ? currentFilter ?>" /><$ tr("Sort by date") $></a>
+<span class="sep">|</span>
+<a href="recordings.html?sort=duplicates&filter=<? currentFilter != "" ? currentFilter ?>" /><$ tr("Duplicates") $></a>
 <%cpp>
+#if VDRVERSNUM >= 20505
+</%cpp>
+<span class="sep">|</span>
+<a href="recordings.html?sort=errors&filter=<? currentFilter != "" ? currentFilter ?>" /><$ tr("Errors") $></a>
+<%cpp>
+#endif
 #ifdef HAVE_LIBPCRECPP
 </%cpp>
 <span class="sep">|</span>
@@ -308,7 +364,7 @@ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 
 <%def del_rec>
 <%args>
-	string id;
+	std::string id;
 </%args>
 <%cpp> { </%cpp><a href="recordings.html?todel=<$ id $>" <& tooltip.hint text=(tr("Delete this recording from hard disc!")) &>><img src="<$ LiveSetup().GetThemedLink("img", "del.png") $>" alt="" /></a><%cpp> } </%cpp>
 </%def>
@@ -317,7 +373,7 @@ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 
 <%def edit_rec>
 <%args>
-	string id;
+	std::string id;
 </%args>
 <%cpp> { </%cpp><a href="edit_recording.html?recid=<$ id $>"><img src="<$ LiveSetup().GetThemedLink("img", "edit.png") $>" alt="" <& tooltip.hint text=(tr("Edit recording")) &> /></a><%cpp> } </%cpp>
 </%def>
@@ -327,11 +383,11 @@ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 
 <%def rec_tools>
 <%args>
-	string id;
-	string title;
+	std::string id;
+	std::string title;
 </%args>
 <& pageelems.ajax_action_href action="play_recording" param=(id) tip=(tr("play this recording.")) image="play.png" alt="" &>
-<& pageelems.vlc_stream_recording recid=(id) &>
+<& pageelems.m3u_playlist_recording recid=(id) &>
 <& pageelems.imdb_info_href title=(title) &>
 <& recordings.edit_rec id=(id) &>
 <& recordings.del_rec id=(id) &>
@@ -341,8 +397,8 @@ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 
 <%def archived_disc>
 <%args>
-	string archived;
-	string title;
+	std::string archived;
+	std::string title;
 </%args>
 <img src="<$ LiveSetup().GetThemedLink("img", "on_dvd.png") $>" alt="on_dvd" <& tooltip.hint text=(archived) &> />
 <& pageelems.imdb_info_href title=(title) &>
@@ -352,65 +408,19 @@ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
 
 <%def rec_item_dir>
 <%args>
-	string name;
-	int level;
-	string collapseimg = "plus.png";
-	string folderimg = "folder_closed.png";
+  std::string name;
+  int level;
+  std::string newR;
 </%args>
-	<div class="recording_item" onclick="Toggle(this)">
-		<div class="recording_imgs"><%cpp> reply.out() << StringRepeat(level - 1, "<img src=\"img/transparent.png\" alt=\"\" width=\"16px\" height=\"16px\" />"); </%cpp><img class="recording_expander" src="<$ LiveSetup().GetThemedLink("img", collapseimg) $>" alt="" /><img class="recording_folder" src="<$ LiveSetup().GetThemedLink("img", folderimg) $>" alt="" /></div>
-		<div class="recording_spec">
-			<div class="recording_name"><$ name $></div>
-	    </div>
-		<div class="recording_actions">&nbsp;</div>
-	</div>
-</%def>
-
-<# ---------------------------------------------------------------------- #>
-
-<%def rec_item_file>
-<%args>
-	string name;
-	int level;
-	string id;
-	string day;
-	string dayLen;
-	time_t startTime;
-	string duration;
-	string hint;
-	string shortDescr;
-	string archived;
-</%args>
-	<div class="recording_item">
-	<div class="recording_imgs"><%cpp> reply.out() << StringRepeat(level, "<img src=\"img/transparent.png\" alt=\"\" width=\"16px\" height=\"16px\" />"); </%cpp><%cpp> if (!archived.empty()) { </%cpp><img src="<$ LiveSetup().GetThemedLink("img", "on_dvd.png") $>" alt="on_dvd" <& tooltip.hint text=(archived) &> /><%cpp> } else { </%cpp><input type="checkbox" name="deletions" value="<$ id $>" /><%cpp> } </%cpp></div>
-	<div class="recording_spec">
-		<div class="recording_day"><$ FormatDateTime(tr("%a,"), startTime) + string(" ") + FormatDateTime(tr("%b %d %y"), startTime) + string(" ") + FormatDateTime(tr("%I:%M %p"), startTime) $></div>
-		<div class="recording_duration"><$ duration $></div>
-		<div class="recording_name"><a <& tooltip.hint text=(hint) &><& tooltip.display domId=(id) &>><$ name $><br /><%cpp>if ((name != shortDescr) && (!shortDescr.empty())) {</%cpp><span><$ shortDescr $></span><%cpp> } else { </%cpp><span>&nbsp;</span><%cpp> } </%cpp></a></div>
-	</div>
-	<div class="recording_actions">
-<%cpp>
-		if (archived.empty()) {
-</%cpp>
-		<& recordings.rec_tools id=(id) title=(name)&>
-<%cpp>
-		}
-		else {
-</%cpp>
-		<img src="img/transparent.png" alt="" width="16px" height="16px" />
-		<& pageelems.imdb_info_href title=(name) &>
-<%cpp>
-		}
-</%cpp>
-	</div>
-<%cpp>
-	if (! archived.empty()) {
-</%cpp>
-	<div class="recording_arch"><$ archived $></div>
-<%cpp>
-	}
-</%cpp>
-	</div>
+  <div class="recording_item" onclick="Toggle(this)">
+    <div class="recording_imgs">
+      <{ if(level > 1) { }><img src="img/transparent.png" width="<$16*(level-1) $>px" height="16px" /> <{ } }>
+      <img class="recording_expander" src="<$ LiveSetup().GetThemedLinkPrefixImg()$>plus.png" /><img class="recording_folder" src="<$ LiveSetup().GetThemedLinkPrefixImg()$>folder_closed.png" /></div>
+    <div class="recording_spec">
+      <div class="recording_name<$ newR $>"><$ name $></div>
+    </div>
+    <div class="recording_actions">&nbsp;</div>
+  </div>
 </%def>
 
 <# ---------------------------------------------------------------------- #>

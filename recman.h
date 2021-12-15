@@ -2,6 +2,8 @@
 #define VDR_LIVE_RECORDINGS_H
 
 #include "stdext.h"
+#include "setup.h"
+#include "tools.h"
 
 // STL headers need to be before VDR tools.h (included by <vdr/recording.h>)
 #include <map>
@@ -9,13 +11,17 @@
 #include <vector>
 #include <list>
 
+#if TNTVERSION >= 30000
+        #include <cxxtools/log.h>  // must be loaded before any vdr include because of duplicate macros (LOG_ERROR, LOG_DEBUG, LOG_INFO)
+#endif
+
 #include <vdr/recording.h>
 
 namespace vdrlive {
 
 	// Forward declations from epg_events.h
 	class EpgInfo;
-	typedef std::tr1::shared_ptr<EpgInfo> EpgInfoPtr;
+	typedef std::shared_ptr<EpgInfo> EpgInfoPtr;
 
 	/**
 	 *  Some forward declarations
@@ -29,10 +35,10 @@ namespace vdrlive {
 	class DirectoryListPtr;
 	class RecordingsItem;
 
-	typedef std::tr1::shared_ptr< RecordingsManager > RecordingsManagerPtr;
-	typedef std::tr1::shared_ptr< RecordingsItem > RecordingsItemPtr;
-	typedef std::tr1::weak_ptr< RecordingsItem > RecordingsItemWeakPtr;
-	typedef std::multimap< std::string, RecordingsItemPtr > RecordingsMap;
+	typedef std::shared_ptr<RecordingsManager> RecordingsManagerPtr;
+	typedef std::shared_ptr<RecordingsItem> RecordingsItemPtr;
+	typedef std::weak_ptr<RecordingsItem> RecordingsItemWeakPtr;
+	typedef std::multimap<std::string, RecordingsItemPtr> RecordingsMap;
 
 
 	/**
@@ -127,10 +133,10 @@ namespace vdrlive {
 #endif
 			static RecordingsManagerPtr EnsureValidData();
 
-			static std::tr1::weak_ptr< RecordingsManager > m_recMan;
-			static std::tr1::shared_ptr< RecordingsTree > m_recTree;
-			static std::tr1::shared_ptr< RecordingsList > m_recList;
-			static std::tr1::shared_ptr< DirectoryList > m_recDirs;
+			static std::weak_ptr<RecordingsManager> m_recMan;
+			static std::shared_ptr<RecordingsTree> m_recTree;
+			static std::shared_ptr<RecordingsList> m_recList;
+			static std::shared_ptr<DirectoryList> m_recDirs;
 #if VDRVERSNUM >= 20301
 			static cStateKey m_recordingsStateKey;
 #else
@@ -140,16 +146,36 @@ namespace vdrlive {
 			cThreadLock m_recordingsLock;
 	};
 
+        class ShortTextDescription
+        {
+              public:
+                   ShortTextDescription(const char * ShortText, const char * Description);
+                   wint_t getNextNonPunctChar();
+              private:
+                   const char * m_short_text;
+                   const char * m_description;
+        };
+
 	/**
 	 * Class containing possible recordings compare functions
 	 */
 	class RecordingsItemPtrCompare
 	{
 		public:
-			static bool ByAscendingDate(RecordingsItemPtr & first, RecordingsItemPtr & second);
-			static bool ByDescendingDate(RecordingsItemPtr & first, RecordingsItemPtr & second);
-			static bool ByAscendingName(RecordingsItemPtr & first, RecordingsItemPtr & second);
-			static bool ByDescendingName(RecordingsItemPtr & first, RecordingsItemPtr & second);
+			static bool ByAscendingDate(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByDescendingDate(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByAscendingName(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByAscendingNameShortText(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByAscendingNameDesc(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByAscendingNameDescSort(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByDescendingNameDescSort(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static bool ByDescendingRecordingErrors(const RecordingsItemPtr & first, const RecordingsItemPtr & second);
+			static std::string getNameForSort(const std::string &Name);
+                        static int compareLC(int &numEqualChars, const char *first, const char *second); // as std::compare, but compare lower case
+                        static int Compare(int &numEqualChars, const RecordingsItemPtr &first, const RecordingsItemPtr &second);
+                        static int Compare2(int &numEqualChars, const RecordingsItemPtr &first, const RecordingsItemPtr &second);
+                        static int FindBestMatch(RecordingsItemPtr &BestMatch, const std::list<RecordingsItemPtr>::iterator & First, const std::list<RecordingsItemPtr>::iterator & Last, const RecordingsItemPtr & EPG_Entry);
+
 	};
 
 	/**
@@ -172,6 +198,10 @@ namespace vdrlive {
 			virtual bool IsDir() const = 0;
 			virtual long Duration() const = 0;
 			virtual const std::string& Name() const { return m_name; }
+			virtual const std::string& NameForSort() const { return m_name_for_sort; }
+			virtual const std::string& NameForSearch() const { return m_name_for_search; }
+                        virtual const char * ShortText() const { return RecInfo()? RecInfo()->ShortText():0; }
+                        virtual const char * Description() const { return RecInfo()? RecInfo()->Description():0; }
 			virtual const std::string Id() const = 0;
 
 			virtual const cRecording* Recording() const { return 0; }
@@ -181,9 +211,23 @@ namespace vdrlive {
 			RecordingsMap::const_iterator end() const { return m_entries.end(); }
 			int Level() { return m_level; }
 
+           // To display the recuring on the UI
+                        virtual const int IsArchived() const { return 0 ; }
+                        virtual const std::string ArchiveDescr() const { return "" ; }
+                        virtual const char *NewR() const { return "" ; }
+                        virtual const int RecordingErrors() const { return -1; }
+                        virtual const char *RecordingErrorsIcon() const { return ""; }
+                        virtual void AppendRecordingErrorsStr(std::string &target) const { };
+                        virtual const int SD_HD() { return 0; }
+                        virtual const char *SD_HD_icon() { return ""; }
+                        virtual void AppendasHtml(std::string &target, bool displayFolder, const std::string argList) { }
+
 		private:
+			std::string GetNameForSearch(std::string const & name);
 			int m_level;
-			std::string m_name;
+			const std::string m_name;
+			const std::string m_name_for_sort;
+			const std::string m_name_for_search;
 			RecordingsMap m_entries;
 			RecordingsItemWeakPtr m_parent;
 	};
@@ -222,19 +266,64 @@ namespace vdrlive {
 
 			virtual ~RecordingsItemRec();
 
-			virtual time_t StartTime() const;
-			virtual long Duration() const;
+			virtual time_t StartTime() const { return m_recording->Start(); }
+			virtual long Duration() const { return m_duration; }
 			virtual bool IsDir() const { return false; }
 			virtual const std::string Id() const { return m_id; }
 
 			virtual const cRecording* Recording() const { return m_recording; }
 			virtual const cRecordingInfo* RecInfo() const { return m_recording->Info(); }
 
+           // To display the recuring on the UI
+                        virtual const int IsArchived() const { return m_isArchived ; }
+                        virtual const std::string ArchiveDescr() const { return RecordingsManager::GetArchiveDescr(m_recording) ; }
+                        virtual const char *NewR() const { return LiveSetup().GetMarkNewRec() && (Recording()->GetResume() <= 0) ? "_new" : "" ; }
+#if VDRVERSNUM >= 20505
+                        virtual const int RecordingErrors() const { return RecInfo()->Errors(); }
+#else
+                        virtual const int RecordingErrors() const { return -1; }
+#endif
+                        virtual const char *RecordingErrorsIcon() const;
+                        void AppendRecordingErrorsStr(std::string &target) const;
+
+                        virtual const int SD_HD();
+                        virtual const char *SD_HD_icon() { return SD_HD() == 0 ? "sd.png": "hd.png"; }
+                        virtual void AppendasHtml(std::string &target, bool displayFolder, const std::string argList);
+                        void AppendHint(std::string &target) const;
+                        void AppendIMDb(std::string &target) const;
+                        void AppendRecordingAction(std::string &target, const char *A, const char *Img, const char *Title, const std::string argList);
+                     
 		private:
 			const cRecording *m_recording;
-			std::string m_id;
+			const std::string m_id;
+                        const int m_isArchived;
+                        const long m_duration; // duration in minutes
+                        int m_video_SD_HD = -1;  // 0 is SD, 1 is HD
 	};
 
+	/**
+	 * Class containing recordings to compare or "dummy" recordings, i.e. data from EPG which can be compared with a recording
+	 */
+	class RecordingsItemDummy: public RecordingsItem
+	{
+		public:
+			RecordingsItemDummy(const std::string &Name, const std::string &ShortText, const std::string &Description, long Duration);
+
+			~RecordingsItemDummy() { };
+
+			const char * ShortText() const { return m_short_text; }
+			const char * Description() const { return m_description; }
+                        virtual time_t StartTime() const { return 0; }
+                        virtual long Duration() const { return m_duration; } // duration in minutes
+                        virtual bool IsDir() const { return false; }
+                        virtual std::string const Id() const { return ""; }
+
+
+		private:
+                        const char * m_short_text;
+                        const char * m_description;
+                        const long m_duration;
+        };
 
 	/**
 	 *  The recordings tree contains all recordings in a file system
@@ -252,8 +341,8 @@ namespace vdrlive {
 
 			RecordingsItemPtr const & Root() const { return m_root; }
 
-			RecordingsMap::iterator begin(const std::vector< std::string >& path);
-			RecordingsMap::iterator end(const std::vector< std::string >&path);
+			RecordingsMap::iterator begin(const std::vector<std::string>& path);
+			RecordingsMap::iterator end(const std::vector<std::string>&path);
 
 			int MaxLevel() const { return m_maxLevel; }
 
@@ -269,12 +358,12 @@ namespace vdrlive {
 	 *  A smart pointer to a recordings tree. As long as an instance of this
 	 *  exists the recordings are locked in the vdr.
 	 */
-	class RecordingsTreePtr : public std::tr1::shared_ptr< RecordingsTree >
+	class RecordingsTreePtr : public std::shared_ptr<RecordingsTree>
 	{
 		friend class RecordingsManager;
 
 		private:
-			RecordingsTreePtr(RecordingsManagerPtr recManPtr, std::tr1::shared_ptr< RecordingsTree > recTree);
+			RecordingsTreePtr(RecordingsManagerPtr recManPtr, std::shared_ptr<RecordingsTree> recTree);
 
 		public:
 			RecordingsTreePtr();
@@ -298,11 +387,11 @@ namespace vdrlive {
 
 		private:
 			RecordingsList(RecordingsTreePtr recTree);
-			RecordingsList(std::tr1::shared_ptr< RecordingsList > recList, bool ascending);
-			RecordingsList(std::tr1::shared_ptr< RecordingsList > recList, time_t begin, time_t end, bool ascending);
+			RecordingsList(std::shared_ptr<RecordingsList> recList, bool ascending);
+			RecordingsList(std::shared_ptr<RecordingsList> recList, time_t begin, time_t end, bool ascending);
 
 		public:
-			typedef std::vector< RecordingsItemPtr > RecVecType;
+			typedef std::vector<RecordingsItemPtr> RecVecType;
 
 			virtual ~RecordingsList();
 
@@ -345,12 +434,12 @@ namespace vdrlive {
 	 *  A smart pointer to a recordings list. As long as an instance of this
 	 *  exists the recordings are locked in the vdr.
 	 */
-	class RecordingsListPtr : public std::tr1::shared_ptr< RecordingsList >
+	class RecordingsListPtr : public std::shared_ptr<RecordingsList>
 	{
 		friend class RecordingsManager;
 
 		private:
-			RecordingsListPtr(RecordingsManagerPtr recManPtr, std::tr1::shared_ptr< RecordingsList > recList);
+			RecordingsListPtr(RecordingsManagerPtr recManPtr, std::shared_ptr<RecordingsList> recList);
 
 		public:
 			virtual ~RecordingsListPtr();
@@ -372,7 +461,7 @@ namespace vdrlive {
 			void InjectFoldersConf(cNestedItem * folder, std::string parent = "");
 
 		public:
-			typedef std::list< std::string > DirVecType;
+			typedef std::list<std::string> DirVecType;
 
 			virtual ~DirectoryList();
 
@@ -389,12 +478,12 @@ namespace vdrlive {
 	 *  A smart pointer to a directory list. As long as an instance of this
 	 *  exists the recordings are locked in the vdr.
 	 */
-	class DirectoryListPtr : public std::tr1::shared_ptr< DirectoryList >
+	class DirectoryListPtr : public std::shared_ptr<DirectoryList>
 	{
 		friend class RecordingsManager;
 
 		private:
-			DirectoryListPtr(RecordingsManagerPtr recManPtr, std::tr1::shared_ptr< DirectoryList > recDirs);
+			DirectoryListPtr(RecordingsManagerPtr recManPtr, std::shared_ptr<DirectoryList> recDirs);
 
 		public:
 			virtual ~DirectoryListPtr();
@@ -412,6 +501,21 @@ namespace vdrlive {
 	 *	kept alive as long references to it exist.
 	 */
 	RecordingsManagerPtr LiveRecordingsManager();
+
+bool checkNew(RecordingsTreePtr recordingsTree, std::vector<std::string> p);
+
+/**
+* Create a (flat) list of all recordings.
+* sample code to achieve this:
+* std::vector<std::string> path;
+* std::list<RecordingsItemPtr> recItems;
+* RecordingsTreePtr recordingsTree(LiveRecordingsManager()->GetRecordingsTree());
+
+* addAllRecordings(recItems, recordingsTree, path);
+*/
+void addAllRecordings(std::list<RecordingsItemPtr> &RecItems, RecordingsTreePtr &RecordingsTree, std::vector<std::string> &P);
+
+void addAllDuplicateRecordings(std::list<RecordingsItemPtr> &DuplicateRecItems, RecordingsTreePtr &RecordingsTree);
 
 } // namespace vdrlive
 

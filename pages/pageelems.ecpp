@@ -8,7 +8,6 @@
 #include <gen_version_suffix.h>
 #include <tntfeatures.h>
 
-using namespace std;
 using namespace vdrlive;
 
 </%pre>
@@ -29,11 +28,17 @@ int update_status(1);
 <link rel="stylesheet" type="text/css" href="<$ LiveSetup().GetThemedLink("css", "theme.css") $>"/>
 <link rel="stylesheet" type="text/css" href="css/siteprefs.css"/>
 <link rel="stylesheet" type="text/css" href="css/DatePicker.css"/>
+<script type="text/javascript" src="js/live/header.js"></script>
 </%def>
 
 <# ---------------------------------------------------------------------- #>
 
 <%def logo>
+<!-- start of fixed page header -->
+<div id="header" style="width: 100%; background-color: inherit">
+<div id="padding" style="display: none"></div>
+<div id="content">
+<!-- header content follows -->
 <%cpp>
 	if (LiveSetup().GetShowLogo()
 		|| (LiveSetup().GetUseAjax() && LiveSetup().GetShowInfoBox())) {
@@ -69,11 +74,11 @@ int update_status(1);
 <%def progressbar>
 <%args>
 	int progress = 0;
-	string id;
+	std::string id;
 	int duration = -1; // invalid duration as default
 </%args>
 <%cpp>
-	string cls("__progress");
+	std::string cls("__progress");
 	if ((duration >= 0) && ((progress < 0) || (duration == 0)))
 		cls +="_invisible";
 </%cpp>
@@ -84,12 +89,12 @@ int update_status(1);
 
 <%def ajax_action_href>
 <%args>
-	string action;
-	string tip;
-	string param;
-	string image;
-	string alt;
-	string id;
+	std::string action;
+	std::string tip;
+	std::string param;
+	std::string image;
+	std::string alt;
+	std::string id;
 </%args>
 <%cpp> { </%cpp><a <%cpp> if (!id.empty()) { </%cpp>id="<$ id $>" <%cpp> } </%cpp><& hide_element hide=(id.empty()? 0 : 1) &> href="vdr_request/<$ action $>?param=<$ param $>" <%cpp>if (!tip.empty()) { </%cpp><& tooltip.hint text=(tip) &> <%cpp> } </%cpp>><img src="<$ LiveSetup().GetThemedLink("img", image) $>" alt="<$ alt $>"></img></a> <%cpp> } </%cpp>
 </%def>
@@ -98,44 +103,69 @@ int update_status(1);
 
 <%def imdb_info_href>
 <%args>
-	string title;
+	std::string title;
 </%args>
 <%cpp> if (LiveSetup().GetShowIMDb()) { </%cpp><a href="http://www.imdb.com/find?s=all&q=<$ StringUrlEncode(title) $>" target="_blank"><img src="<$ LiveSetup().GetThemedLink("img", "imdb.png") $>" alt="" <& tooltip.hint text=(tr("Find more at the Internet Movie Database.")) &>></img></a> <%cpp> } </%cpp>
 </%def>
 
 <# ---------------------------------------------------------------------- #>
 
-<%def vlc_stream_channel>
+<%def hls_channel>
 <%args>
-	tChannelID channelId;
+	std::string channelId;
 </%args>
-<%cpp> if (LiveSetup().GetUseStreamdev() && LiveFeatures<features::streamdev_server>().Loaded()) { </%cpp><a href="vlc.html?channel=<$ channelId $>"><img src="<$ LiveSetup().GetThemedLink("img", "stream_button.png") $>" alt="" <& tooltip.hint text=(tr("Stream this channel into browser.")) &>></img></a><%cpp> } </%cpp>
+<%cpp>
+if (LiveSetup().GetUseStreamdev() && LiveFeatures<features::streamdev_server>().Loaded()) {
+</%cpp>
+<a href="stream.html?channelid_str=<$ channelId $>"><img src="<$ LiveSetup().GetThemedLink("img", "stream_button.png") $>" alt="" <& tooltip.hint text=(tr("Stream this channel into browser.")) &>></img></a>
+<%cpp>
+}
+</%cpp>
 </%def>
-
 
 <# ---------------------------------------------------------------------- #>
 
-<%def vlc_stream_recording>
+<%def m3u_playlist_channel>
 <%args>
-	string recid;
-	string linkText;
+	std::string channelId;
+</%args>
+<%cpp>
+if (LiveSetup().GetUseStreamdev() && LiveFeatures<features::streamdev_server>().Loaded()) {
+#if TNTVERSION >= 30000
+</%cpp>
+<a href="playlist.m3u?channel_str=<$ channelId $>"><img src="<$ LiveSetup().GetThemedLink("img", "playlist.png") $>" alt="" <& tooltip.hint text=(tr("Stream this channel into media player.")) &>></img></a>
+<%cpp>
+#else
+</%cpp>
+<a href="playlist.m3u?channel=<$ channelId $>"><img src="<$ LiveSetup().GetThemedLink("img", "playlist.png") $>" alt="" <& tooltip.hint text=(tr("Stream this channel into media player.")) &>></img></a>
+<%cpp>
+#endif
+}
+</%cpp>
+</%def>
+
+<# ---------------------------------------------------------------------- #>
+
+<%def m3u_playlist_recording>
+<%args>
+	std::string recid;
+	std::string linkText;
 </%args>
 <%cpp>
 #if TNT_WATCHDOG_SILENCE
 {
-</%cpp><a href="vlc.html?recid=<$ recid $>"><img src="<$ LiveSetup().GetThemedLink("img", "stream_button.png") $>" alt="" <& tooltip.hint text=(tr("Stream this recording into browser.")) &>></img> <$ linkText $></a>
+</%cpp><a href="playlist.m3u?recid=<$ recid $>"><img src="<$ LiveSetup().GetThemedLink("img", "playlist.png") $>" alt="" <& tooltip.hint text=(tr("Stream this recording into media player.")) &>></img> <$ linkText $></a>
 <%cpp>
 }
 #endif
 </%cpp>
 </%def>
 
-
 <# ---------------------------------------------------------------------- #>
 
 <%def event_timer>
 <%args>
-	string epgid;
+	std::string epgid;
 </%args>
 <%cpp>
 	tChannelID channelid;
@@ -159,8 +189,8 @@ int update_status(1);
 
 <%def edit_timer>
 <%args>
-	string timerId;
-	string imgName = "edit.png";
+	std::string timerId;
+	std::string imgName = "edit.png";
 </%args>
 	<a href="edit_timer.html?timerid=<$ SortedTimers::EncodeDomId(timerId) $>"><img src="<$ LiveSetup().GetThemedLink("img", imgName) $>" alt="" <& tooltip.hint text=(tr("Edit timer")) &> /></a>
 </%def>
@@ -259,8 +289,8 @@ int update_status(1);
 <%def epg_tool_box>
 <%args>
 	int detail;
-	string epgid;
-	string title;
+	std::string epgid;
+	std::string title;
 	time_t startTime;
 	time_t endTime;
 	int lastCurrentChanel = int();
@@ -284,7 +314,8 @@ int update_status(1);
 		}
 		if ((duration == 0) || (elapsed >= 0)) {
 </%cpp>
-	<& pageelems.vlc_stream_channel channelId=(channelId) &>
+	<& pageelems.hls_channel channelId=(channelId) &>
+	<& pageelems.m3u_playlist_channel channelId=(channelId) &>
 <%cpp>
 		}
 	if (eventId != 0) {
@@ -298,7 +329,8 @@ int update_status(1);
 		<td class="action leftcol <? lastCurrentChanel ? "bottomrow"?>"><& pageelems.event_timer epgid=(epgid) &></td>
 		<td class="action <? lastCurrentChanel ? "bottomrow"?>"><& pageelems.ajax_action_href action="switch_channel" tip=(tr("Switch to this channel.")) param=(channelId) image="zap.png" alt="" &></td>
 		<td class="action <? lastCurrentChanel ? "bottomrow"?>"><%cpp>if (LiveFeatures<features::epgsearch>().Recent() && eventId != 0) { </%cpp><a href="searchresults.html?searchplain=<$ StringUrlEncode(title) $>"><img src="<$ LiveSetup().GetThemedLink("img", "search.png") $>" alt="" <& tooltip.hint text=(tr("Search for repeats.")) &>></img></a><%cpp> } else { </%cpp><img src="img/transparent.png" width="16" height="16"><%cpp> } </%cpp></td>
-        <td class="action <? lastCurrentChanel ? "bottomrow"?>"><%cpp>if ((duration == 0)  || (elapsed > 0)) { </%cpp><& pageelems.vlc_stream_channel channelId=(channelId) &><%cpp> } else { </%cpp><img src="img/transparent.png" width="16" height="16"><%cpp> } </%cpp></td>
+		<td class="action <? lastCurrentChanel ? "bottomrow"?>"><%cpp>if ((duration == 0) || (elapsed > 0)) { </%cpp><& pageelems.hls_channel channelId=(channelId) &><%cpp> } </%cpp></td>
+		<td class="action <? lastCurrentChanel ? "bottomrow"?>"><%cpp>if ((duration == 0) || (elapsed > 0)) { </%cpp><& pageelems.m3u_playlist_channel channelId=(channelId) &><%cpp> } </%cpp></td>
 		<td class="action <? lastCurrentChanel ? "bottomrow"?>">
 <%cpp>
 			if (eventId != 0) {
@@ -317,14 +349,16 @@ int update_status(1);
 
 <%def epg_tt_box>
 <%args>
-	string boxId;
-	string caption;
-	string tools_comp;
-	string time;
-	string title;
-	string short_descr;
-	string long_descr;
-	string archived;
+	std::string boxId;
+	std::string caption;
+	std::string tools_comp;
+	std::string time;
+	std::string title;
+	std::string short_descr;
+	std::string long_descr;
+	std::string filename;
+	std::string archived;
+ 	std::string epgImage;
 	int elapsed = -1;
 </%args>
 	<div class="epg_description" id="<$ (boxId) $>">
@@ -349,10 +383,25 @@ int update_status(1);
 				<div class="description">
 					<span class="epg_images">
 <%cpp>
-	list<string> images = EpgEvents::EpgImages(boxId);
+	std::list<std::string> images = EpgEvents::EpgImages(boxId);
 	for(std::list<std::string>::iterator it = images.begin(); it != images.end(); ++it ) {
 </%cpp>
 						<img src="/epgimages/<$ *it $>" class="epg_image"/>
+<%cpp>
+	}
+        if(!epgImage.empty() ) {
+</%cpp>
+	 <img src="/tvscraper/<$ epgImage $>" class="epg_image"/>
+<%cpp>
+	}
+
+	std::list<std::string> images1 = EpgEvents::RecImages(boxId, filename);
+	size_t delimPos = boxId.find_last_of('_');
+	std::string recId = (delimPos)?boxId.substr(delimPos+1):boxId;
+
+	for(std::list<std::string>::iterator it = images1.begin(); it != images1.end(); ++it ) {
+</%cpp>
+						<img src="/recimages/<$ recId $>/<$ *it $>" class="epg_image"/>
 <%cpp>
 	}
 </%cpp>
@@ -379,6 +428,8 @@ int update_status(1);
 				<div class="about_left"><$ tr("Webserver") $>:</div>
 				<div class="about_right">Sascha Volkenandt (LordJaxom)</div>
 				<div class="about_left"><$ tr("Current Maintainer") $>:</div>
+				<div class="about_right">Markus Ehrnsperger (MarkusE @ <a href="https://www.vdr-portal.de">VDR Portal</a>)</div>
+				<div class="about_left"><$ tr("Previous Maintainer") $>:</div>
 				<div class="about_right">Jasmin Jessich (jasminj)</div>
 				<div class="about_left"><$ tr("Project leader") $>:</div>
 				<div class="about_right">Dieter Hametner (tadi)</div>
@@ -428,11 +479,11 @@ int update_status(1);
 <%cpp>
 					}
 </%cpp>
-					(<a href="http://streamdev.vdr-developer.org/" target="_blank"><$ tr("Homepage") $></a>)<br/>
+					(<a href="https://projects.vdr-developer.org/projects/plg-streamdev" target="_blank"><$ tr("Homepage") $></a>)<br/>
 				</div>
 				<div class="about_head"><div><div><$ tr("Bugs and suggestions") $></div></div></div>
 				<div class="about_line"><$ tr("If you encounter any bugs or would like to suggest new features, please use our bugtracker") $>:<br/>
-					<a target="_blank" href="http://projects.vdr-developer.org/projects/plg-live">http://projects.vdr-developer.org/projects/plg-live</a></div>
+					<a target="_blank" href="https://github.com/MarkusEh/vdr-plugin-live/issues">https://github.com/MarkusEh/vdr-plugin-live/issues</a></div>
 				<div class="about_head"><div><div>&nbsp;</div></div></div>
 			</div>
 		</div>
