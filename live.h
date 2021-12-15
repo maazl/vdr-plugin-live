@@ -6,9 +6,13 @@
 // STL headers need to be before VDR tools.h (included by <vdr/plugin.h>)
 #include <string>
 
-#ifndef __STL_CONFIG_H
+#if TNTVERSION >= 30000
+        #include <cxxtools/log.h>  // must be loaded before any vdr include because of duplicate macros (LOG_ERROR, LOG_DEBUG, LOG_INFO)
+#endif
+
+#ifndef DISABLE_TEMPLATES_COLLIDING_WITH_STL
 // To get rid of the swap definition in vdr/tools.h
-# define __STL_CONFIG_H
+#define DISABLE_TEMPLATES_COLLIDING_WITH_STL
 #endif
 #include <vdr/plugin.h>
 
@@ -38,7 +42,7 @@ private:
 	static std::string m_configDirectory;
 	static std::string m_resourceDirectory;
 
-	std::unique_ptr< ServerThread > m_thread;
+	std::unique_ptr<ServerThread> m_thread;
 };
 
 } // namespace vdrlive

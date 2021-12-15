@@ -328,6 +328,7 @@ div.info-win {
 	margin-top: 14px;
 	margin-left: 15px;
 	float: left;
+        max-width: 490px;
 }
 
 .info-win .info-win-top .info-win-c .info-win-b {
@@ -525,7 +526,7 @@ div#infobox {
 	float: left;
 	border: 1px solid #C0C1DA;
 	margin: 5px;
-	width: 320px;
+	min-width: 320px;
 }
 
 div#infobox div.st_header {
@@ -554,6 +555,7 @@ div#infobox div.st_content {
 
 div#infobox div.st_content div.duration {
 	float: right;
+	padding-left: 2em;
 }
 
 div#infobox div.st_content div.name {
@@ -597,9 +599,6 @@ div#infobox div.st_controls div#infobox_channel_buttons {
 button {
 	width: 100px;
 	height: 20px;
-	background-color: inherit;
-	background-image: url(img/button_green.png);
-	background-repeat: no-repeat;
 	color: #FFFFFF;
 	font-size: 11px;
 	border: 0px;
@@ -843,6 +842,11 @@ table.listing tr td.current {
 	color: blue;
 }
 
+table.listing tr td.noborder {
+  background: none;
+  border-style: none;
+}
+
 table.listing tr.head td {
 	color: white;
 	font-weight: bold;
@@ -1030,6 +1034,32 @@ div.recording_item {
 .recording_item div.recording_name span {
 	font-weight: normal;
 	cursor: pointer;
+}
+
+.recording_item div.recording_name_new {
+	font-weight: bold;
+	color: orangered;
+	cursor: pointer;
+}
+
+.recording_item div.recording_name_new a {
+	color: orangered;
+}
+
+.recording_item div.recording_name_new span {
+	font-weight: normal;
+}
+
+.recording_item div.recording_errors {
+	width: 26px;
+}
+
+.recording_item div.recording_sd_hd {
+	width: 35px;
+}
+
+.recording_item div.recording_aspect_ratio {
+	width: 35px;
 }
 
 .recording_item div.recording_arch {
@@ -1327,14 +1357,3 @@ div.epg_content div.about_head div div {
 	border-top: 1px solid #C0C1DA;
 	border-bottom: 1px solid #C0C1DA;
 }
-
-/* ##############################
-   # VLC page
-   ##############################
-*/
-
-div#vlcControls {
-	padding-top: 5px;
-	text-align: center;
-}
-

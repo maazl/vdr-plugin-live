@@ -7,6 +7,10 @@
 #include <string>
 #include <list>
 
+#if TNTVERSION >= 30000
+        #include <cxxtools/log.h>  // must be loaded before any vdr include because of duplicate macros (LOG_ERROR, LOG_DEBUG, LOG_INFO)
+#endif
+
 #include <vdr/channels.h>
 #include <vdr/epg.h>
 #include <vdr/recording.h>
@@ -16,7 +20,7 @@ namespace vdrlive
 
 	class EpgInfo;
 
-	typedef std::tr1::shared_ptr<EpgInfo> EpgInfoPtr;
+	typedef std::shared_ptr<EpgInfo> EpgInfoPtr;
 
 	// -------------------------------------------------------------------------
 
@@ -52,7 +56,14 @@ namespace vdrlive
 		/**
 		 *  Return a list of EpgImage paths for a given epgid.
 		 */
+
+                std::string PosterTvscraper(const cEvent *event, const cRecording *recording);
 		std::list<std::string> EpgImages(std::string const &epgid);
+
+		/**
+		 *  Return a list of RecImages in the given folder.
+		 */
+		std::list<std::string> RecImages(std::string const &epgid, std::string const &recfolder);
 
 		/**
 		 *  Calculate the duration. A duration can be zero or
@@ -96,6 +107,8 @@ namespace vdrlive
 
 			virtual std::string const Archived() const { return ""; }
 
+			virtual std::string const FileName() const { return ""; }
+
 			virtual std::string const StartTime(const char* format) const;
 
 			virtual std::string const EndTime(const char* format) const;
@@ -110,6 +123,7 @@ namespace vdrlive
 
 			virtual time_t GetEndTime() const = 0;
 
+			virtual cEvent const *Event() const { return NULL; }
 		private:
 			std::string m_eventId;
 			std::string m_caption;
@@ -138,6 +152,8 @@ namespace vdrlive
 			virtual time_t GetStartTime() const;
 
 			virtual time_t GetEndTime() const;
+
+			virtual std::string const FileName() const { return ""; }
 
 		private:
 			const std::string m_info;
@@ -173,6 +189,9 @@ namespace vdrlive
 			virtual cChannel const * Channel() const { return Channels.GetByChannelID(m_event->ChannelID());}
 #endif
 
+			virtual std::string const FileName() const { return ""; }
+
+			virtual cEvent const *Event() const { return m_event; }
 		private:
 			cEvent const * m_event;
 	};
@@ -205,6 +224,8 @@ namespace vdrlive
 			virtual cChannel const * Channel() const { return Channels.GetByChannelID(m_channelID);}
 #endif
 
+			virtual std::string const FileName() const { return ""; }
+
 		private:
 			tChannelID m_channelID;
 	};
@@ -234,6 +255,8 @@ namespace vdrlive
 			virtual std::string const LongDescr() const;
 
 			virtual std::string const Archived() const;
+
+			virtual std::string const FileName() const;
 
 			virtual time_t GetStartTime() const;
 

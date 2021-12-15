@@ -5,11 +5,15 @@
 #include <list>
 #include <string>
 
+#if TNTVERSION >= 30000
+        #include <cxxtools/log.h>  // must be loaded before any vdr include because of duplicate macros (LOG_ERROR, LOG_DEBUG, LOG_INFO)
+#endif
+
 #include <vdr/timers.h>
 
 namespace vdrlive {
 
-	class SortedTimers: public std::list< cTimer >
+	class SortedTimers: public std::list<cTimer>
 	{
 		friend class TimerManager;
 
@@ -27,9 +31,9 @@ namespace vdrlive {
 			bool Modified() { return Timers.Modified(m_state); }
 #endif
 
-			static std::string GetTimerDays(cTimer const& timer);
+			static std::string GetTimerDays(cTimer const *timer);
 			static std::string GetTimerInfo(cTimer const& timer);
-			static std::string SearchTimerName(cTimer const& timer);
+			static std::string SearchTimerInfo(cTimer const& timer, std::string const& value);
 
 		private:
 			SortedTimers();
@@ -43,7 +47,6 @@ namespace vdrlive {
 			int m_state;
 #endif
 
-			void ReloadTimers();
 	};
 
 	class TimerManager: public cMutex
@@ -53,22 +56,28 @@ namespace vdrlive {
 		public:
 			SortedTimers& GetTimers() { return m_timers; }
 
-			void UpdateTimer( const cTimer* timer, int flags, tChannelID& channel, std::string const& weekdays, std::string const& day,
-							  int start, int stop, int priority, int lifetime, std::string const& title, std::string const& aux );
+			void UpdateTimer( int timerId, const char* remote, const char* oldRemote, int flags, const tChannelID& channel, std::string const& weekdays,
+					  std::string const& day, int start, int stop, int priority, int lifetime, std::string const& title, std::string const& aux );
 
-			void DelTimer( const cTimer* timer);
-			void ToggleTimerActive( const cTimer* timer);
+			void DelTimer( int timerId, const char* remote);
+			void ToggleTimerActive( int timerId, const char* remote);
 			// may only be called from Plugin::MainThreadHook
 			void DoPendingWork();
-			void DoReloadTimers() { m_timers.ReloadTimers(); m_reloadTimers = false; }
 			const cTimer* GetTimer(tEventID eventid, tChannelID channelid);
 			void SetReloadTimers() { m_reloadTimers = true; }
 
 		private:
-			typedef std::pair< const cTimer*, std::string > TimerPair;
-			typedef std::pair< TimerPair, std::string > ErrorPair;
-			typedef std::list< TimerPair > TimerList;
-			typedef std::list< ErrorPair > ErrorList;
+			typedef struct
+                        {
+                          int id;
+                          const char* remote;
+                          const char* oldRemote;
+			  std::string builder;
+                        } timerStruct;
+
+			typedef std::pair<timerStruct, std::string> ErrorPair;
+			typedef std::list<timerStruct> TimerList;
+			typedef std::list<ErrorPair> ErrorList;
 
 			TimerManager();
 			TimerManager( TimerManager const& );
@@ -77,16 +86,16 @@ namespace vdrlive {
 			TimerList m_updateTimers;
 			ErrorList m_failedUpdates;
 			cCondVar m_updateWait;
-			bool m_reloadTimers;
+			bool m_reloadTimers = false;
 
 			void DoUpdateTimers();
-			void DoInsertTimer( TimerPair& timerData );
-			void DoUpdateTimer( TimerPair& timerData );
-			void DoDeleteTimer( TimerPair& timerData );
-			void DoToggleTimer( TimerPair& timerData );
+			void DoInsertTimer( timerStruct& timerData );
+			void DoUpdateTimer( timerStruct& timerData );
+			void DoDeleteTimer( timerStruct& timerData );
+			void DoToggleTimer( timerStruct& timerData );
 
-			void StoreError( TimerPair const& timerData, std::string const& error );
-			std::string GetError( TimerPair const& timerData );
+			void StoreError( timerStruct const& timerData, std::string const& error );
+			std::string GetError( timerStruct const& timerData );
 	};
 
 	TimerManager& LiveTimerManager();

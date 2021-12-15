@@ -7,7 +7,6 @@
 #include <timers.h>
 
 using namespace vdrlive;
-using namespace std;
 
 static const size_t maximumDescriptionLength = 300;
 
@@ -35,7 +34,7 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 		<& pageelems.stylesheets &>
 		<& pageelems.ajax_js &>
 	</head>
-	<body>
+	<body onload="adjustHeader()" onresize="adjustHeader()">
 		<& pageelems.logo &>
 		<& menu active=("timersconflicts")>
 		<div class="inhalt">
@@ -50,7 +49,7 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 </%cpp>
 						<tr class="head">
 							<td colspan="11">
-								<div class="boxheader"><div><div><$ FormatDateTime(tr("%A, %x"), conflict->ConflictTime()) + " " + FormatDateTime(tr("%I:%M %p"), conflict->ConflictTime()) + " - " + lexical_cast<string, int>(confltimer->percentage) + "%" $></div></div></div>
+								 <div class="boxheader"><div><div><$ FormatDateTime(tr("%A, %x"), conflict->ConflictTime()) + " " + FormatDateTime(tr("%I:%M %p"), conflict->ConflictTime()) + " - " + lexical_cast<std::string, int>(confltimer->percentage) + "%" $><span style="float:right;"><diff><$ tr("Server")$>: <$ (confltimer->remote == "" ) ? tr("local") : confltimer->remote $> </diff></span></div></div></div>
 							</td>
 						</tr>
 						<tr class="description">
@@ -70,7 +69,7 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 						for (std::list<int>::const_iterator timerIndex = confltimer->concurrentTimerIndices.begin(); timerIndex != confltimer->concurrentTimerIndices.end(); ++timerIndex) {
 #if VDRVERSNUM >= 20301
 							LOCK_TIMERS_READ;
-							cTimer* timer = (cTimer *)Timers->Get(*timerIndex-1);
+							cTimer* timer = (cTimer *)Timers->GetById(*timerIndex, (confltimer->remote == "") ? NULL : confltimer->remote.c_str());
 #else
 							cTimer* timer = Timers.Get(*timerIndex-1);
 #endif
@@ -82,7 +81,7 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 
 							std::string timerStateImg = "transparent.png";
 							std::string timerStateHint;
-							if (timer->Index() == confltimer->timerIndex-1) {
+							if (timer->Id() == confltimer->timerIndex) {
 								timerStateImg = "timerconflict.gif";
 								timerStateHint = tr("Timer has a conflict.");
 							}
@@ -92,9 +91,9 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 							}
 
 							EpgInfoPtr epgEvent;
-							string longDescription;
-							string searchTimName;
-							string title;
+							std::string longDescription;
+							std::string searchTimName;
+							std::string title;
 #if VDRVERSNUM >= 20301
 							if (!timer->Event()) {
 								LOCK_SCHEDULES_READ;
@@ -108,7 +107,7 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 								longDescription = StringEscapeAndBreak(SortedTimers::GetTimerInfo(*timer)) + "<hr>"
 													+ StringEscapeAndBreak(StringWordTruncate(epgEvent->LongDescr(), maximumDescriptionLength))
 													+ "<br/><br/>" + tr("Click to view details.");
-								searchTimName = SortedTimers::SearchTimerName(*timer);
+								searchTimName = SortedTimers::SearchTimerInfo(*timer, "searchtimer");
 								title = epgEvent->Title();
 							}
 </%cpp>

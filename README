@@ -4,15 +4,17 @@ Written by:                  Thomas Keil <tkeil@datacrystal.de>
                              Sascha Volkenandt <sascha@akv-soft.de>
 
 Currently maintained by:
-                             Jasmin Jessich <jasmin@anw.at>
+                             Markus Ehrnsperger ( MarkusE @ https://www.vdr-portal.de)
 
 Previously Maintained by:
                              Dieter Hametner <dh+vdr@gekrumbel.de>
                              Christian Wieninger <cwieninger@gmx.de>
+                             Jasmin Jessich <jasmin@anw.at>
 
-Project's homepage:          http://live.vdr-developer.org
+Project's homepage:          https://github.com/MarkusEh/vdr-plugin-live
+Project's old homepage:      http://live.vdr-developer.org
 
-Latest version available at: http://live.vdr-developer.org
+Latest version available at: https://github.com/MarkusEh/vdr-plugin-live
 
 See the file COPYING for license information.
 
@@ -45,9 +47,7 @@ Requirements:
 
 VDR >= 2.0.0
 
-gcc >= 3.1
-if gcc < 4.0:
-boost >= 1.32.0		- http://www.boost.org
+gcc >= 4.8.1
 PCRE >= 8.0.2     	- http://www.pcre.org/
 Tntnet >= 1.5.3		- http://www.tntnet.org/download.hms
 Cxxtools >= 1.4.3	- http://www.tntnet.org/download.hms
@@ -120,6 +120,14 @@ You can also specifiy this parameter via commandline:
 
 Additional SSL options are available now. See "How to make LIVE listen
 for ssl connections" section below on hints how to setup SSL.
+
+To display images, you can use:
+
+  -e <...>  --epgimages=/path/to/epgimages		use EPG images created by plugins like tvm2vdr
+  -t <...>  --tvscraperimages=/path/to/tvscraperimages	use images created by tvscraper
+Example:
+  --tvscraperimages=/var/cache/vdr/plugins/tvscraper
+
 
 The rest of the parameters can be adjusted in VDR's OSD or in the web
 interface.

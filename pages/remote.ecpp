@@ -5,7 +5,6 @@
 #include <tools.h>
 #include <users.h>
 
-using namespace std;
 using namespace vdrlive;
 
 </%pre>
@@ -227,14 +226,14 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 			for (i = 0; i < items.length; ++i) {
 				element.options[i].value = items[i];
 				element.options[i].text = (items[i] / 1000) + " s";
-				if (items[i] == <$ ConvertToString( LiveSetup().GetScreenshotInterval(), locale("C") ) $>)
+				if (items[i] == <$ ConvertToString( LiveSetup().GetScreenshotInterval(), std::locale("C") ) $>)
 					element.selectedIndex = i;
 			}
 		}
 		//--></script>
-% reply.sout().imbue(locale());
+% reply.sout().imbue(std::locale());
 	</head>
-	<body onload="StreamInit();">
+	<body onload="StreamInit(); FillIntervals(); adjustHeader()" onresize="adjustHeader()">
 		<& pageelems.logo &>
 		<& menu active="remote" component=("remote.remote_actions")>
 		<div class="inhalt">
@@ -287,7 +286,7 @@ if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 <%def remote_actions>
 <b><$ tr("Selection") $></b>:&nbsp;
 <{	if ( LiveGrabImageManager().CanGrab()) {			}>
-	 <input type="radio" name="screenCon" id="screenCon_grab" onchange="changeScreenContent()"/>&nbsp;<label for="screenCon_grab"><$ tr("Snapshot interval") $>:</label> <select name="interval" onchange="ChangeInterval()"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<& pageelems.vlc_stream_channel channelId=(Channel->GetChannelID()) &> -
+	 <input type="radio" name="screenCon" id="screenCon_grab" onchange="changeScreenContent()"/>&nbsp;<label for="screenCon_grab"><$ tr("Snapshot interval") $>:</label> <select name="interval" onchange="ChangeInterval()"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
 <{	} 				}>
  <input type="radio" name="screenCon" id="screenCon_osd" onchange="changeScreenContent()" />&nbsp;<label for="screenCon_osd">OSD</label> -
  <input type="radio" name="screenCon" id="screenCon_none" onchange="changeScreenContent()" />&nbsp;<label for="screenCon_osd"><$ tr("Stop") $></label>

@@ -16,6 +16,7 @@ namespace vdrlive {
 	{
 		public:
 			int timerIndex; 							// it's index in VDR
+			std::string remote = "";
 			int percentage;								// percentage of recording
 			std::list<int> concurrentTimerIndices;		// concurrent timer indices
 
@@ -30,7 +31,7 @@ namespace vdrlive {
 	class TimerConflict
 	{
 			time_t conflictTime;							// time of conflict
-			std::list< TimerInConflict > conflictingTimers; // conflicting timers at this time
+			std::list<TimerInConflict> conflictingTimers; // conflicting timers at this time
 
 		friend bool operator<( TimerConflict const& left, TimerConflict const& right );
 
@@ -40,13 +41,13 @@ namespace vdrlive {
 			void Init();
 
 			time_t ConflictTime() { return conflictTime; }
-			const std::list< TimerInConflict >& ConflictingTimers() { return conflictingTimers; }
+			const std::list<TimerInConflict>& ConflictingTimers() { return conflictingTimers; }
 	};
 
 	class TimerConflicts
 	{
 		public:
-			typedef std::list< TimerConflict > ConflictList;
+			typedef std::list<TimerConflict> ConflictList;
 			typedef ConflictList::size_type size_type;
 			typedef ConflictList::iterator iterator;
 			typedef ConflictList::const_iterator const_iterator;
@@ -61,13 +62,14 @@ namespace vdrlive {
 
 			static bool CheckAdvised();
 		private:
+			void GetRemote(std::list<std::string> & conflicts);
 			ConflictList m_conflicts;
 	};
 
 	class TimerConflictNotifier
 	{
 		public:
-			typedef std::tr1::shared_ptr<TimerConflicts> TimerConflictsPtr;
+			typedef std::shared_ptr<TimerConflicts> TimerConflictsPtr;
 
 			TimerConflictNotifier();
 			virtual ~TimerConflictNotifier();
