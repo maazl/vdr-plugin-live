@@ -1,0 +1,187 @@
+From: wirbel-at-vdr-portal 
+Subject: Replace obsolete pcre by pcre2
+Origin: other, https://github.com/MarkusEh/vdr-plugin-live/pull/23
+Bug-Debian: http://bugs.debian.org/999934
+
+--- a/Makefile
++++ b/Makefile
+@@ -10,8 +10,8 @@
+ ### The version number of this plugin (taken from the main source file):
+ VERSION := $(shell grep '\#define LIVEVERSION ' setup.h | awk '{ print $$3 }' | sed -e 's/[";]//g')
+ 
+-### Check for libpcre c++ wrapper
+-HAVE_LIBPCRECPP := $(shell pcre-config --libs-cpp)
++### Check for libpcre2
++HAVE_PCRE2 = $(shell if pkg-config --exists libpcre2-8; then echo "1"; else echo "0"; fi )
+ 
+ ### The directory environment:
+ # Use package data if installed...otherwise assume we're under the VDR source directory:
+@@ -56,10 +56,10 @@
+ 
+ ### Optional configuration features
+ PLUGINFEATURES :=
+-ifneq ($(HAVE_LIBPCRECPP),)
+-	PLUGINFEATURES += -DHAVE_LIBPCRECPP
+-	CXXFLAGS       += $(shell pcre-config --cflags)
+-	LIBS           += $(HAVE_LIBPCRECPP)
++ifeq ($(HAVE_PCRE2),1)
++	PLUGINFEATURES += -DHAVE_PCRE2
++	CXXFLAGS       += $(shell pkg-config --cflags libpcre2-8)
++	LIBS           += $(shell pkg-config --libs   libpcre2-8)
+ endif
+ 
+ # -Wno-deprecated-declarations .. get rid of warning: ‘template<class> class std::auto_ptr’ is deprecated
+@@ -90,7 +90,7 @@
+ PLUGINOBJS := $(PLUGIN).o thread.o tntconfig.o setup.o i18n.o timers.o \
+               tools.o recman.o tasks.o status.o epg_events.o epgsearch.o \
+               grab.o md5.o filecache.o livefeatures.o preload.o timerconflict.o \
+-              users.o osd_status.o ffmpeg.o
++              users.o osd_status.o ffmpeg.o StringMatch.o
+ PLUGINSRCS := $(patsubst %.o,%.cpp,$(PLUGINOBJS))
+ 
+ WEB_LIB_PAGES := libpages.a
+--- a/README
++++ b/README
+@@ -48,7 +48,7 @@
+ VDR >= 2.0.0
+ 
+ gcc >= 4.8.1
+-PCRE >= 8.0.2     	- http://www.pcre.org/
++PCRE2 >= 10.38     	- https://github.com/PhilipHazel/pcre2/releases
+ Tntnet >= 1.5.3		- http://www.tntnet.org/download.hms
+ Cxxtools >= 1.4.3	- http://www.tntnet.org/download.hms
+ 
+@@ -56,12 +56,8 @@
+ Boost provides some data structures we need. While currently relying on the
+ full blown package we might provide a stripped down version in the future.
+ 
+-PCRE provides filtering for recordings. Some older versions pcre-config tool
+-doesn't contain C++ wrapper option, but filtering support can be forced via
+-commandline:
+-
+-make HAVE_LIBPCRECPP="-lpcrecpp -lpcre"
+-
++PCRE2 provides filtering for recordings using perl regexp language.
++If you don't need filtering, PCRE2 is optional.
+ 
+ If you optionaly want to regenerate the i18n-generated.h header file
+ for backward compatible i18n (VDR version prior to 1.5.7) you also
+--- a/pages/recordings.ecpp
++++ b/pages/recordings.ecpp
+@@ -6,11 +6,9 @@
+ #include <users.h>
+ #include <recman.h>
+ #include <tntconfig.h>
+-
+-#ifdef HAVE_LIBPCRECPP
+-#include <pcrecpp.h>
++#ifdef HAVE_PCRE2
++#include <StringMatch.h>
+ #endif
+-
+ #include <vdr/videodir.h>
+ 
+ #define MB_PER_MINUTE 25.75 // this is just an estimate!
+@@ -315,9 +313,12 @@
+   recoring_item.clear();
+   recItem->AppendasHtml(recoring_item, currentFlat == "true", argList);
+   max_length_recoring_item = std::max(max_length_recoring_item, recoring_item.length() );
+-#ifdef HAVE_LIBPCRECPP
+-		pcrecpp::RE re(filter.c_str(), pcrecpp::UTF8().set_caseless(true));
+-		if (filter.empty() || re.PartialMatch(recItem->Name()) || re.PartialMatch(recItem->ShortText()?recItem->ShortText() : "" ) || re.PartialMatch(recItem->Description()?recItem->Description() : ""))
++#ifdef HAVE_PCRE2
++  StringMatch sm(filter);
++  if (filter.empty() or
++      sm.Matches(recItem->Name()) or
++      sm.Matches(recItem->ShortText()?recItem->ShortText() : "" ) or
++      sm.Matches(recItem->Description()?recItem->Description() : ""))
+ #endif
+ 		{
+ </%cpp>
+@@ -346,7 +347,7 @@
+ <a href="recordings.html?sort=errors&filter=<? currentFilter != "" ? currentFilter ?>" /><$ tr("Errors") $></a>
+ <%cpp>
+ #endif
+-#ifdef HAVE_LIBPCRECPP
++#ifdef HAVE_PCRE2
+ </%cpp>
+ <span class="sep">|</span>
+ <span class="label bold"><$ tr("Filter") $>:&nbsp;<input type="text" name="filter" value="<$ currentFilter $>" id="filter" onchange="filterRecordings(this)" />&nbsp;<& tooltip.help text=(tr("Look in recordings titles and subtitles for the given string and display only the matching ones. You may also use perl compatible regular expressions (PCRE).")) &></span>
+--- /dev/null
++++ b/StringMatch.cpp
+@@ -0,0 +1,58 @@
++#include "StringMatch.h"
++#ifdef HAVE_PCRE2
++
++/* we use utf8, therefore we use code unit of 8 bit width.
++ * define PCRE2_CODE_UNIT_WIDTH before #include <pcre2.h>
++ */
++#define PCRE2_CODE_UNIT_WIDTH 8
++#include <pcre2.h>
++
++
++StringMatch::StringMatch(std::string Pattern) : re(nullptr), match_data(nullptr) {
++  PCRE2_SIZE erroroffset;
++  int errorcode;
++
++  if (not Pattern.empty()) {
++     re = pcre2_compile(
++            (PCRE2_SPTR) Pattern.c_str(),
++            PCRE2_ZERO_TERMINATED,
++             0
++             | PCRE2_CASELESS           // Do caseless matching
++             | PCRE2_DUPNAMES           // Allow duplicate names for subpatterns
++             | PCRE2_NEVER_BACKSLASH_C  // Lock out the use of \C in patterns
++             | PCRE2_NEVER_UCP          // Lock out PCRE2_UCP, e.g. via (*UCP)
++             | PCRE2_NO_UTF_CHECK       // Do not check the pattern for UTF validity (only relevant if PCRE2_UTF is set)
++             | PCRE2_UTF                // Treat pattern and subjects as UTF strings
++            ,
++            &errorcode,
++            &erroroffset,
++            nullptr);
++     }
++
++  if (re != nullptr)
++     match_data = pcre2_match_data_create_from_pattern((const pcre2_code*)re, nullptr);
++}
++
++
++StringMatch::~StringMatch() {
++  pcre2_match_data_free((pcre2_match_data*)match_data);
++  pcre2_code_free((pcre2_code*)re);
++}
++
++bool StringMatch::Matches(std::string s) {
++  if ((re == nullptr) or (match_data == nullptr))
++     return false;
++
++  int rc = pcre2_match(
++              (pcre2_code*)re,               // the compiled pattern
++              (PCRE2_SPTR) s.c_str(),        // the subject string
++              s.size(),                      // the length of the subject
++              0,                             // start at offset 0 in the subject
++              0,                             // default options
++              (pcre2_match_data*)match_data, // block for storing the result
++              nullptr);                      // use default match context
++
++  return rc >= 0;
++}
++
++#endif
+--- /dev/null
++++ b/StringMatch.h
+@@ -0,0 +1,14 @@
++#pragma once
++#ifdef HAVE_PCRE2
++#include <string>
++
++class StringMatch {
++private:
++  void* re;
++  void* match_data;
++public:
++  StringMatch(std::string Pattern);
++  ~StringMatch();
++  bool Matches(std::string s);
++};
++#endif
