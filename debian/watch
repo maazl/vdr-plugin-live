@@ -1,4 +1,3 @@
 version=4
-
-#http://live.vdr-developer.org/downloads/vdr-live-(.*)\.tar\.gz
-https://projects.vdr-developer.org/git/vdr-plugin-live.git .*/release_(\d+)-(\d+)-(\d+)\.tar\.bz2
+opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/<project>-$1\.tar\.gz/ \
+  https://github.com/MarkusEh/vdr-plugin-live/tags .*/v?(\d\S+)\.tar\.gz

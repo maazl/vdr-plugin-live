@@ -1,5 +1,6 @@
 Upstream Homepage:
-    https://projects.vdr-developer.org/projects/plg-live (current)
+    https://github.com/MarkusEh/vdr-plugin-live (current)
+    https://projects.vdr-developer.org/projects/plg-live (old)
     http://live.vdr-developer.org/ (old)
 
 Upstream Authors:
@@ -9,6 +10,7 @@ Upstream Authors:
     Christian Wieninger <cwieninger@gmx.de>
     Michael Brueckner <vdr@gekrumbel.de>
     Jasmin Jessich <jasmin@anw.at>
+    Markus Ehrnsperger (MarkusE @ https://www.vdr-portal.de)
 
 Debian Maintainers:
     Tobias Grimm <etobi@debian.org>
