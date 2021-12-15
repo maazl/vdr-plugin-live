@@ -1,11 +1,12 @@
-vdr-plugin-live (3.1.3-1) UNRELEASED; urgency=medium
+vdr-plugin-live (3.1.3-1) unstable; urgency=medium
 
   * Project moved to GitHub
   * New upstream version 3.1.3 (Closes: #984388)
   * Depend on debhelper-compat (= 13)
   * Build-Depend on vdr >= 2.4.7
+  * Use the newer libpcre2 instead of libcre3 (Closes: #999934)
 
- -- Tobias Grimm <etobi@debian.org>  Wed, 15 Dec 2021 20:18:17 +0100
+ -- Tobias Grimm <etobi@debian.org>  Wed, 15 Dec 2021 22:07:38 +0100
 
 vdr-plugin-live (2.3.1-5) unstable; urgency=medium
 
