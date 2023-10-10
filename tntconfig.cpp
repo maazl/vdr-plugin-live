@@ -11,6 +11,11 @@
 #else
 #include <cxxtools/loginit.h>
 #endif
+
+#if TNTVERSION >= 31000
+#include <cxxtools/sslctx.h>
+#endif
+
 #include "services.h"
 
 namespace vdrlive {
@@ -215,11 +220,20 @@ namespace vdrlive {
 		static cPlugin *pScraper = LiveSetup().GetPluginTvscraper();
 		if (pScraper) {
 // plugin tvscraper is available
-			cGetScraperImageDir getScraperImageDir;
-			if (getScraperImageDir.call(pScraper) ) {
+// first try cEnvironment, which is also available in scraper2vdr
+      cEnvironment environment;
+      if (pScraper->Service("GetEnvironment", &environment) ) {
+// plugin tvscraper/scraper2vdr supports the service interface cEnvironment
+				esyslog("live: INFO: set image dir from GetEnvironment to '%s'", environment.basePath.c_str());
+        LiveSetup().SetTvscraperImageDir(environment.basePath);
+      } else {
+        cGetScraperImageDir getScraperImageDir;
+        if (getScraperImageDir.call(pScraper) ) {
 // plugin tvscraper supports the service interface GetScraperImageDir (version 1.05 or newer)
-				LiveSetup().SetTvscraperImageDir(getScraperImageDir.scraperImageDir);
-			}
+				  esyslog("live: WARNING: set image dir from deprected GetScraperImageDir to '%s'", getScraperImageDir.scraperImageDir.c_str());
+          LiveSetup().SetTvscraperImageDir(getScraperImageDir.scraperImageDir);
+        }
+      }
 		}
 		if (!LiveSetup().GetTvscraperImageDir().empty()) {
 			ConfigureTvscraper(app, LiveSetup().GetTvscraperImageDir());
@@ -331,7 +345,13 @@ namespace vdrlive {
 
 			if (std::ifstream( s_cert.c_str() ) && std::ifstream( s_key.c_str() ) ) {
 				for ( Setup::IpList::const_iterator ip = ips.begin(); ip != ips.end(); ++ip ) {
+#if TNTVERSION < 31000
 					app.sslListen(s_cert, s_key, *ip, s_port);
+#else
+					cxxtools::SslCtx sslCtx;
+					sslCtx.loadCertificateFile(s_cert, s_key);
+					app.listen(*ip, s_port, sslCtx);
+#endif
 				}
 			}
 			else {
