@@ -637,7 +637,6 @@ class cToSv {
     cToSv &operator= (const cToSv &) = delete;
     virtual ~cToSv() {}
     virtual operator cSv() const = 0;
-    operator std::string_view() const { return (cSv)*this; }
 };
 inline std::ostream& operator<<(std::ostream& os, cToSv const& sv )
 {
