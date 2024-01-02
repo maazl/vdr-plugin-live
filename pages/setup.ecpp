@@ -1,6 +1,7 @@
 <%pre>
 
 #include <setup.h>
+#include <stringhelpers.h>
 #include <tools.h>
 #include <users.h>
 #include <live.h>
@@ -20,7 +21,6 @@ using namespace vdrlive;
 	std::string theme;
 	std::string localnetmask;
 	std::string showLogo;
-	std::string useAjax;
 	std::string showInfoBox;
 	std::string useStreamdev;
 	std::string markNewRec;
@@ -45,7 +45,7 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 		throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
 
 #define SELECTIF(x) reply.out() << ( (x) ? "selected=\"selected\"" : "" );
-#define CHECKIF(x) reply.out() << ( (x) ? "checked=\"checked\"" : "" );
+#define CHECKIF(x) reply.out() << ( (x) ? " checked=\"checked\"" : "" );
 
 	std::string message;
 
@@ -54,7 +54,7 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 			message = tr("Please set login and password!");
 		else
 		{
-			LiveSetup().SetLastChannel(lastchannel != "" ? lexical_cast< int >(lastchannel):0);
+			LiveSetup().SetLastChannel(lastchannel != "" ? parse_int<int>(lastchannel):0);
 			LiveSetup().SetUseAuth(useauth);
 			if (useauth) {
 				LiveSetup().SetAdminLogin(login);
@@ -69,12 +69,9 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 			LiveSetup().SetStartScreen(startscreen);
 			LiveSetup().SetTheme(theme);
 			LiveSetup().SetShowLogo(!showLogo.empty());
-			LiveSetup().SetUseAjax(!useAjax.empty());
-			if (LiveSetup().GetUseAjax()) {
-				LiveSetup().SetShowInfoBox(!showInfoBox.empty());
-			}
+			LiveSetup().SetShowInfoBox(!showInfoBox.empty());
 			LiveSetup().SetUseStreamdev(!useStreamdev.empty());
-			LiveSetup().SetStreamdevPort(streamdevport.empty() ? 3000 : lexical_cast<int>(streamdevport));
+			LiveSetup().SetStreamdevPort(streamdevport.empty() ? 3000 : parse_int<int>(streamdevport));
 			LiveSetup().SetStreamdevType(streamdevtype.empty() ? "PES" : streamdevtype);
 			LiveSetup().SetMarkNewRec(!markNewRec.empty());
 
@@ -98,7 +95,7 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 	if (ilastchannel == std::numeric_limits< int >::max())
 		lastchannel = "";
 	else
-		lastchannel = lexical_cast<std::string, int>(ilastchannel);
+		lastchannel = std::string(cToSvInt(ilastchannel));
 
 	login = LiveSetup().GetAdminLogin();
 	useauth = LiveSetup().GetUseAuth();
@@ -109,10 +106,9 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 	theme = LiveSetup().GetTheme();
 	localnetmask = LiveSetup().GetLocalNetMask();
 	showLogo = LiveSetup().GetShowLogo() ? "1" : "";
-	useAjax = LiveSetup().GetUseAjax() ? "1" : "";
 	showInfoBox = LiveSetup().GetShowInfoBox() ? "1" : "";
 	useStreamdev = LiveSetup().GetUseStreamdev() ? "1" : "";
-	streamdevport = lexical_cast<std::string, int>(LiveSetup().GetStreamdevPort());
+	streamdevport = std::string(cToSvInt(LiveSetup().GetStreamdevPort()));
 	streamdevtype = LiveSetup().GetStreamdevType();
 	markNewRec = LiveSetup().GetMarkNewRec() ? "1" : "";
 	streamVideoOpt0 = LiveSetup().GetStreamVideoOpt0();
@@ -134,7 +130,6 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 		function initform()
 		{
 			changeduseauth(document.getElementById("useauth"));
-			changeduseajax(document.getElementById("useAjax"));
 			changedusestreamdev(document.getElementById("useStreamdev"));
 			if (document.getElementById("message").value != "")
 				alert(document.getElementById("message").value);
@@ -146,10 +141,6 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 		function setauthchanged(selection)
 		{
 			document.getElementById("authchanged").value = 1;
-		}
-		function changeduseajax(selection)
-		{
-			document.getElementById("ajaxsection").style.display = (selection.checked ? "block" : "none");
 		}
 		function changedusestreamdev(selection)
 		{
@@ -171,7 +162,7 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Use authentication") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="useauth" id="useauth" value="1" <%cpp> CHECKIF(useauth); </%cpp>onclick="changeduseauth(this)"/>
+							<input type="checkbox" name="useauth" id="useauth" value="1"<{ CHECKIF(useauth); }> onclick="changeduseauth(this)"/>
 							<div id="authsection" style="display: none">
 							<table border="0" cellpadding="0" cellspacing="0" class="dependent">
 							<tr>
@@ -197,27 +188,19 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Show live logo image") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="showLogo" id="showLogo" value="1" <%cpp> CHECKIF(!showLogo.empty()); </%cpp>/>
+							<input type="checkbox" name="showLogo" id="showLogo" value="1"<%cpp> CHECKIF(!showLogo.empty()); </%cpp>/>
 						</td>
 					</tr>
 					<tr>
-						<td class="label leftcol"><div class="withmargin"><$ tr("Use ajax technology") $>:</div></td>
+            <td class="label leftcol"><div class="withmargin"><$ tr("Show dynamic VDR information box") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="useAjax" id="useAjax" value="1" <%cpp> CHECKIF(!useAjax.empty()); </%cpp>onclick="changeduseajax(this)"/>
-							<div id="ajaxsection" style="display: none">
-							<table border="0" cellpadding="0" cellspacing="0" class="dependent">
-							<tr>
-								<td class="label"><div class="withmargin"><$ tr("Show dynamic VDR information box") $>:</div></td>
-								<td><input type="checkbox" name="showInfoBox" id="showInfoBox" value="1" <%cpp> CHECKIF(!showInfoBox.empty()); </%cpp>/></td>
-							</tr>
-							</table>
-							</div>
+              <input type="checkbox" name="showInfoBox" id="showInfoBox" value="1"<%cpp> CHECKIF(!showInfoBox.empty()); </%cpp>/>
 						</td>
 					</tr>
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Allow video streaming") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="useStreamdev" id="useStreamdev" value="1" <%cpp> CHECKIF(!useStreamdev.empty()); </%cpp>onclick="changedusestreamdev(this)"/>
+							<input type="checkbox" name="useStreamdev" id="useStreamdev" value="1"<{ CHECKIF(!useStreamdev.empty()); }> onclick="changedusestreamdev(this)"/>
 							<div id="streamdevsection" style="display: none">
 							<table border="0" cellpadding="0" cellspacing="0" class="dependent">
 							<tr>
@@ -257,19 +240,19 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
                                         <tr>
                                                 <td class="label leftcol"><div class="withmargin"><$ tr("Mark new recordings") $>:</div></td>
                                                 <td class="rightcol">
-                                                        <input type="checkbox" name="markNewRec" id="markNewRec" value="1" <%cpp> CHECKIF(!markNewRec.empty()); </%cpp>/>
+                                                        <input type="checkbox" name="markNewRec" id="markNewRec" value="1"<%cpp> CHECKIF(!markNewRec.empty()); </%cpp>/>
                                                 </td>
                                         </tr>
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Show link to IMDb in list views") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="showIMDb" id="showIMDb" value="1" <%cpp> CHECKIF(!showIMDb.empty()); </%cpp>/>
+							<input type="checkbox" name="showIMDb" id="showIMDb" value="1"<%cpp> CHECKIF(!showIMDb.empty()); </%cpp>/>
 						</td>
 					</tr>
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Show \"Play in Mediaplayer\" in list views") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="showPlayMediaplayer" id="showPlayMediaplayer" value="1" <%cpp> CHECKIF(!showPlayMediaplayer.empty()); </%cpp>/>
+							<input type="checkbox" name="showPlayMediaplayer" id="showPlayMediaplayer" value="1"<%cpp> CHECKIF(!showPlayMediaplayer.empty()); </%cpp>/>
 						</td>
 					</tr>
 					<tr>
@@ -294,7 +277,7 @@ if (!cUser::CurrentUserHasRightTo(UR_EDITSETUP))
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Show channels without EPG") $>:</div></td>
 						<td class="rightcol">
-							<input type="checkbox" name="showChannelsWithoutEPG" id="showChannelsWithoutEPG" value="1" <%cpp> CHECKIF(!showChannelsWithoutEPG.empty()); </%cpp>/>
+							<input type="checkbox" name="showChannelsWithoutEPG" id="showChannelsWithoutEPG" value="1"<%cpp> CHECKIF(!showChannelsWithoutEPG.empty()); </%cpp>/>
 						</td>
 					</tr>
 

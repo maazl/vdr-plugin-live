@@ -21,8 +21,7 @@ using namespace vdrlive;
 	std::string epgid;
 	std::string async;
 	// form parameters
-	tChannelID channel;           // used with Tntnet20
-  std::string channel_string = "";   // used with Tntnet30
+  std::string channel_string = "";
 	int active = 1;
 	std::string title = "";
 	std::string remoteServerName = "";
@@ -52,15 +51,13 @@ const cTimer* timer;
 </%request>
 <%include>page_init.eh</%include>
 <%cpp>
-#if TNTVERSION >= 30000
-	channel = channel.FromString(channel_string.c_str());  // Tntnet30: get struct channel from parameter string
-#endif
+  tChannelID channel = tChannelID::FromString(channel_string.c_str());
 	if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 
 	if (!cUser::CurrentUserHasRightTo(UR_EDITTIMERS))
 		throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
 
-	bool ajaxReq = !async.empty() && (lexical_cast<int>(async) != 0);
+	bool ajaxReq = !async.empty() && (parse_int<int>(async) != 0);
 
 	tChannelID channelid = tChannelID();
 	tEventID eventid = tEventID();
@@ -106,9 +103,18 @@ const cTimer* timer;
 //		dsyslog("live: remote '%s'", remote);
 			LiveTimerManager().UpdateTimer( timerId, remote, oldRemote, flags, channel, weekdays, date, start, stop, priority, lifetime, file, aux );
 			timerNotifier.SetTimerModification();
-			return reply.redirect(!edit_timerreferer.empty()?edit_timerreferer:"timers.html");
+</%cpp>
+<!DOCTYPE html>
+<html>
+  <script>
+    history.go(-2);
+  </script>
+</html>
+<%cpp>
+//			return reply.redirect("html/back.html");
+//			return reply.redirect(!edit_timerreferer.empty()?edit_timerreferer:"timers.html");
 		}
-	}
+	} else {
 
 	if (message.empty())
 		edit_timerreferer = request.getHeader("Referer:", "timers.html");
@@ -118,16 +124,10 @@ const cTimer* timer;
 		EpgEvents::DecodeDomId(epgid, channelid, eventid);
 		if ( channelid.Valid() && eventid != 0 ) {
 			cSchedule const* schedule;
-#if VDRVERSNUM >= 20301
 			{
 				LOCK_SCHEDULES_READ;
 				schedule = Schedules->GetSchedule( channelid );
 			}
-#else
-			cSchedulesLock schedLock;
-			cSchedules const* schedules = cSchedules::Schedules( schedLock );
-			schedule = schedules->GetSchedule( channelid );
-#endif
 			const cEvent *event = schedule->GetEvent( eventid );
 			if (event) eventTimer.reset( new cTimer( event ) );
 			else {
@@ -226,14 +226,7 @@ const cTimer* timer;
 
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ trVDR("Channel") $>:</div></td>
-<%cpp>
-#if TNTVERSION >= 30000
-						std::string name = "channel_string";  // Tntnet30 does not work with parameter type tChannelID
-#else
-						std::string name = "channel";
-#endif
-</%cpp>
-						<td class="rightcol"><div class="withmargin"><& channels_widget name=(name) channelid=(true) selected=(channel) &></div></td>
+						<td class="rightcol"><div class="withmargin"><& channels_widget name=("channel_string") channelid=(true) selected=(channel) &></div></td>
 					</tr>
 
 					<tr>
@@ -374,4 +367,5 @@ const cTimer* timer;
 		</div>
 	</body>
 </html>
+% }
 <%include>page_exit.eh</%include>

@@ -32,6 +32,7 @@ std::string current_displaytime;
 
 <%include>page_init.eh</%include>
 <%cpp>
+reply.setHeader (tnt::httpheader::cacheControl, "no-store, no-cache, max-age=0, must-revalidate, proxy-revalidate", true);
 if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 
 
@@ -120,31 +121,15 @@ if (type == "now") {
 	// collect the broadcasts
 	if (type != "favs")
 	{
-#if VDRVERSNUM >= 20301
 		LOCK_CHANNELS_READ;
 		{
-#else
-		ReadLock channelsLock( Channels );
-		if (channelsLock) {
-#endif
-#if VDRVERSNUM >= 20301
 			for (cChannel *Channel = (cChannel *)Channels->First(); Channel && Channel->Number() <= LiveSetup().GetLastChannel(); Channel = (cChannel *)Channels->Next(Channel)) {
-#else
-			for (cChannel *Channel = Channels.First(); Channel && Channel->Number() <= LiveSetup().GetLastChannel(); Channel = Channels.Next(Channel)) {
-#endif
 				if (Channel->GroupSep()) {
 					continue;
 				}
 				const cSchedule *Schedule;
 				{
-#if VDRVERSNUM >= 20301
-
 					LOCK_SCHEDULES_READ;
-#else
-					cSchedulesLock schedulesLock;
-					const cSchedules* Schedules = cSchedules::Schedules(schedulesLock);
-#endif
-
 					Schedule = Schedules->GetSchedule(Channel);
 				}
 				if (!Schedule) {
@@ -191,7 +176,7 @@ if (type == "now") {
 		EpgInfoPtr epgEvent = *i;
 
 		bool truncated = false;
-		std::string truncDescription = StringWordTruncate(epgEvent->LongDescr(), maximumTruncDescriptionLength, truncated);
+		std::string truncDescription(StringWordTruncate(epgEvent->LongDescr(), maximumTruncDescriptionLength, truncated));
 		std::string longDescription = StringEscapeAndBreak(StringWordTruncate(epgEvent->LongDescr(), LiveSetup().GetMaxTooltipChars()))
 			+ "<br/><br/>" + tr("Click to view details.");
 		const cChannel* Channel = epgEvent->Channel();
@@ -212,14 +197,14 @@ if (type == "now") {
 </%cpp>
 			<div class="event">
 				<div class="station">
-					<div><div><div><a href="schedule.html?channel=<$ std::to_string(chNumber) $>" <& tooltip.hint text=(tr("View the schedule of this channel")) &>><$ std::to_string(chNumber) $><$ tr(" - ") $><$ (epgEvent->Caption()) $></a></div></div></div>
+					<div><div><div><a href="schedule.html?channel=<$ cSv(cToSvInt(chNumber)) $>" <& tooltip.hint text=(tr("View the schedule of this channel")) &>><$ cSv(cToSvInt(chNumber)) $><$ tr(" - ") $><$ (epgEvent->Caption()) $></a></div></div></div>
 				</div>
 				<div class="content">
 					<div class="tools">
 						<& pageelems.epg_tool_box detail=(1) epgid=(epgEvent->Id()) title=(epgEvent->Title()) startTime=(epgEvent->GetStartTime()) endTime=(epgEvent->GetEndTime()) &>
 					</div>
 					<div>
-						<div class="info nowrap"><div class="date"><$ (startDate) $></div><div class="time"><$ (timeSpan) $></div></div>
+						<div class="info nowrap"><div class="date margin_right"><$ (startDate) $></div><div class="time"><$ (timeSpan) $></div></div>
 						<div class="progress"><div><& pageelems.progressbar progress=(epgEvent->Elapsed()) duration=(epgEvent->Duration()) &></div></div>
 						<div class="title withmargin"><$ (epgEvent->Title()) $></div>
 						<div class="short withmargin"><$ (epgEvent->ShortDescr()) $></div>
@@ -237,6 +222,27 @@ if (type == "now") {
 			tChannelID chanId;
 			tEventID eventId;
 			EpgEvents::DecodeDomId(epgEvent->Id(), chanId, eventId);
+
+			// Searching for channel logos
+			std::string chanlogoimg;
+			if (!LiveSetup().GetChanLogoDir().empty() ) {
+				std::string chanlogofile = StringReplace(epgEvent->Caption(), "/", "_") + ".png";
+				std::string chanlogopath = LiveSetup().GetChanLogoDir() + chanlogofile;
+				struct stat chanfilebuf;
+        bool logo_available = stat (chanlogopath.c_str(), &chanfilebuf) == 0;
+        if (!logo_available) {
+          chanlogofile = std::string(cToSvToLower(chanlogofile, g_locale));
+          chanlogopath = LiveSetup().GetChanLogoDir() + chanlogofile;
+          logo_available = stat (chanlogopath.c_str(), &chanfilebuf) == 0;
+        }
+				if (logo_available) {
+					chanlogoimg = "<img src=\"chanlogos/";
+          AppendHtmlEscapedAndCorrectNonUTF8(chanlogoimg, chanlogofile);
+          chanlogoimg.append("\" alt=\"");
+          AppendHtmlEscapedAndCorrectNonUTF8(chanlogoimg, epgEvent->Caption());
+          chanlogoimg.append("\" loading=\"lazy\" class=\"channel_logo\">");
+				}
+      }
 </%cpp>
 			<tr>
 				<& pageelems.epg_tool_box detail=(0) epgid=(epgEvent->Id()) title=(epgEvent->Title()) startTime=(epgEvent->GetStartTime()) endTime=(epgEvent->GetEndTime()) lastCurrentChanel=(lastCurrentChanel ? 1 : 0) &>
@@ -260,7 +266,7 @@ if (type == "now") {
 %					}
 					</div>
 				</td>
-				<td class="topaligned rightcol <? lastCurrentChanel ? "bottomrow"?>"><div class="station withmargin"><a	href="schedule.html?channel=<$ std::to_string(chNumber) $>" <& tooltip.hint text=(tr("View the schedule of this channel")) &>><$ std::to_string(chNumber) $><$ tr(" - ") $><$ (epgEvent->Caption()) $></a></div>
+				<td class="topaligned rightcol <? lastCurrentChanel ? "bottomrow"?>"><div class="station withmargin"><a href="schedule.html?channel=<$ cSv(cToSvInt(chNumber)) $>" <& tooltip.hint text=(tr("View the schedule of this channel")) &>><$ cSv(cToSvInt(chNumber)) $><$ tr(" - ") $><$$ chanlogoimg $><$ chanlogoimg.empty()?epgEvent->Caption():"" $></a></div>
 				</td>
 			</tr>
 %	}

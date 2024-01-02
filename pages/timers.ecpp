@@ -25,6 +25,7 @@ using namespace vdrlive;
 </%request>
 <%include>page_init.eh</%include>
 <%cpp>
+  reply.setHeader (tnt::httpheader::cacheControl, "no-store, no-cache, max-age=0, must-revalidate, proxy-revalidate", true);
 	if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 
 	pageTitle = trVDR("Timers");
@@ -47,14 +48,20 @@ using namespace vdrlive;
 //                        dsyslog("live: timers.ecpp timer->Remote() %s", timer->Remote());
 			LiveTimerManager().DelTimer(timer->Id(), timer->Remote());
 			timerNotifier.SetTimerModification();
-			return reply.redirect("timers.html");
 		}
 		if (action == "toggle") {
 			LiveTimerManager().ToggleTimerActive(timer->Id(), timer->Remote());
 			timerNotifier.SetTimerModification();
-			return reply.redirect("timers.html");
 		}
-	}
+</%cpp>
+<!DOCTYPE html>
+<html>
+  <script>
+    history.go(-1);
+  </script>
+</html>
+<%cpp>
+	} else {
 
 	std::string previousDay = "";
 </%cpp>
@@ -93,6 +100,8 @@ using namespace vdrlive;
 					std::string longDescription;
 					std::string searchTimName;
 					std::string searchTimId;
+					std::string recID;
+					std::string recName;
 
 					if (timer->Event())
 					{
@@ -102,13 +111,13 @@ using namespace vdrlive;
             longDescription += LiveSetup().GetUseAjax()?"<hr>":lf;
 					  longDescription += StringEscapeAndBreak(StringWordTruncate(epgEvent->LongDescr(), LiveSetup().GetMaxTooltipChars(), truncated), lf);
 					  if (truncated) longDescription += "...";
-            AppendHtmlEscapedAndCorrectNonUTF8(searchTimName, SortedTimers::SearchTimerInfo(*timer, "searchtimer").c_str());
+            AppendHtmlEscapedAndCorrectNonUTF8(searchTimName, SortedTimers::SearchTimerInfo(*timer, "searchtimer"));
             searchTimId = SortedTimers::SearchTimerInfo(*timer, "s-id");
-            if (searchTimName.empty() && searchTimId.empty() ) AppendHtmlEscapedAndCorrectNonUTF8(searchTimName, SortedTimers::TvScraperTimerInfo(*timer).c_str());
+            if (searchTimName.empty() && searchTimId.empty() ) AppendHtmlEscapedAndCorrectNonUTF8(searchTimName, SortedTimers::TvScraperTimerInfo(*timer, recID, recName) );
 					}
 					std::string currentDay = SortedTimers::GetTimerDays(timer);
-                                        const cTimer *nextTimer =  NULL;
-                                        if (i < (sortedTimers.Size() - 1)) nextTimer = sortedTimers[i + 1];
+          const cTimer *nextTimer =  NULL;
+          if (i < (sortedTimers.Size() - 1)) nextTimer = sortedTimers[i + 1];
 					bool bottom = false;
 					if (i == sortedTimers.Size() - 1) bottom = true;
 					else {
@@ -169,7 +178,7 @@ using namespace vdrlive;
 </%cpp>
 				<tr>
 
-				<td class="leftcol <? bottom ? "bottomrow" ?>"><img src="<$ LiveSetup().GetThemedLink("img", timerStateImg) $>" alt="" <%cpp> if (!timerStateHint.empty()) { </%cpp><& tooltip.hint text=(timerStateHint) &><%cpp> } </%cpp>></img></td>
+				<td class="leftcol <? bottom ? "bottomrow" ?>"><img src="<$ LiveSetup().GetThemedLink("img", timerStateImg) $>" alt="" <%cpp> if (!timerStateHint.empty()) { </%cpp><& tooltip.hint text=(timerStateHint) &> <%cpp> } </%cpp>/></td>
           <td class="<? bottom ? "bottomrow" ?>"><div class="withmargin">
              <table class="noborder"><tr><td class="noborder"><span class="display-xs nowrap" > <$ FormatDateTime(tr("%I:%M %p"), timer->StartTime()) $> - <$ FormatDateTime(tr("%I:%M %p"), timer->StopTime()) $></span></td></tr>
              <tr><td class="noborder"><a href="schedule.html?channel=<$ timer->Channel()->Number()$>"><$ timer->Channel()->Name() $></a></td></tr>
@@ -189,17 +198,22 @@ using namespace vdrlive;
 					<td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><div class="xs-nomargin"><$ timer->Local()?trVDR(" "):timer->Remote() $></div></td>
           <td class="<? bottom ? "bottomrow" ?>"><div class="withmargin">
 %					if ( !timer->Local() || searchTimId.empty() ) {
-            <$$ StringReplace(searchTimName, "~", "~<wbr>") $></div></td>
+<# not created by epgsearch, check tvscraper autotimer #>
+            <$$ StringReplace(searchTimName, "~", "~<wbr>") $>
+%           if (!recID.empty() ) {
+					    <a href="epginfo.html?epgid=<$ recID $>"> <$$ StringReplace(recName, "~", "~<wbr>") $></a>
+%           }
 %					} else {
-					  <a href="edit_searchtimer.html?searchtimerid=<$ searchTimId $>"><$$ StringReplace(searchTimName, "~", "~<wbr>") $></a></div></td>
+					  <a href="edit_searchtimer.html?searchtimerid=<$ searchTimId $>"><$$ StringReplace(searchTimName, "~", "~<wbr>") $></a>
 %					}
-            <td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><a class="hidden-xs action-rightcol" href="timers.html?timerid=<$ SortedTimers::EncodeDomId(timers.GetTimerId(*timer)) $>&action=toggle"><img src="<$ LiveSetup().GetThemedLink("img", (timer->Flags() & tfActive) ? "active.png" : "inactive.png") $>" alt="" <& tooltip.hint text=(tr("Toggle timer active/inactive")) &>></img></a></td>
-            <td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><div class="hidden-xs action-rightcol"><& pageelems.edit_timer timerId=(timers.GetTimerId(*timer)) &></div></td>
+          </div></td>
+          <td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><a class="hidden-xs action-rightcol" href="timers.html?timerid=<$ SortedTimers::EncodeDomId(timers.GetTimerId(*timer)) $>&action=toggle"><img src="<$ LiveSetup().GetThemedLink("img", (timer->Flags() & tfActive) ? "active.png" : "inactive.png") $>" alt="" <& tooltip.hint text=(tr("Toggle timer active/inactive")) &> /></a></td>
+          <td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><div class="hidden-xs action-rightcol"><& pageelems.edit_timer timerId=(timers.GetTimerId(*timer)) &></div></td>
 
-				    <td class="rightcol <? bottom ? "bottomrow" ?>">
-<a class="display-xs action-rightcol" href="timers.html?timerid=<$ SortedTimers::EncodeDomId(timers.GetTimerId(*timer)) $>&action=toggle"><img src="<$ LiveSetup().GetThemedLink("img", (timer->Flags() & tfActive) ? "active.png" : "inactive.png") $>" alt="" <& tooltip.hint text=(tr("Toggle timer active/inactive")) &>></img></a>
+				  <td class="rightcol <? bottom ? "bottomrow" ?>">
+<a class="display-xs action-rightcol" href="timers.html?timerid=<$ SortedTimers::EncodeDomId(timers.GetTimerId(*timer)) $>&action=toggle"><img src="<$ LiveSetup().GetThemedLink("img", (timer->Flags() & tfActive) ? "active.png" : "inactive.png") $>" alt="" <& tooltip.hint text=(tr("Toggle timer active/inactive")) &> /></a>
 <div class="display-xs action-rightcol"><& pageelems.edit_timer timerId=(timers.GetTimerId(*timer)) &></div>
-<a class="action-rightcol" href="timers.html?timerid=<$ SortedTimers::EncodeDomId(timers.GetTimerId(*timer)) $>&action=delete"><img src="<$ LiveSetup().GetThemedLink("img", "del.png") $>" alt="" <& tooltip.hint text=(tr("Delete timer")) &>></img></a></td>
+<a class="action-rightcol" href="timers.html?timerid=<$ SortedTimers::EncodeDomId(timers.GetTimerId(*timer)) $>&action=delete"><img src="<$ LiveSetup().GetThemedLink("img", "del.png") $>" alt="" <& tooltip.hint text=(tr("Delete timer")) &> /></a></td>
 
 				</tr>
 <%cpp>
@@ -210,6 +224,7 @@ using namespace vdrlive;
 		</div>
 	</body>
 </html>
+% }
 <%include>page_exit.eh</%include>
 
 <%def timer_actions>

@@ -1,4 +1,3 @@
-
 #include "tntconfig.h"
 
 #include "i18n.h"
@@ -196,6 +195,41 @@ namespace vdrlive {
 			   "/themes/$1/css/$2",
 			   "text/css");
 
+		// the following rules enable SVG file support, which require the special
+		// content type "image/svg+xml" for inline display in browsers
+		// inserted by 'flell' -- verified with above, but not counterchecked yet!
+		MapUrl(app,
+			   "^/themes/([^/]*)/img.*/(.+)\\.svg",
+			   "content",
+			   GetResourcePath(),
+			   "/themes/$1/img/$2.svg",
+			   "image/svg+xml");
+
+		MapUrl(app,
+			   "^/themes/([^/]*)/img.*/(.+)\\.svg",
+			   "content",
+			   GetResourcePath(),
+			   "/img/$2.svg",
+			   "image/svg+xml");
+		
+		MapUrl(app,
+			   "^/img.*/(.+)\\.svg",
+			   "content",
+			   GetResourcePath(),
+			   "/img/$1.svg",
+			   "image/svg+xml");
+
+		// the following rule enables channel logo support
+		// inserted by 'flell' -- verified with above, but not counterchecked yet!
+		if (!LiveSetup().GetChanLogoDir().empty() ) {
+    			MapUrl(app,
+		    		   "^/chanlogos/(.+)\\.png",
+		    		   "content",
+	    			   LiveSetup().GetChanLogoDir(),
+	    			   "/$1.png",
+				   "image/png");
+		}
+
 		// the following rules provide a search scheme for images. The first
 		// rule where a image is found, terminates the search.
 		// 1. /themes/<theme>/img/<imgname>.<ext>
@@ -287,6 +321,15 @@ namespace vdrlive {
 			   GetResourcePath(),
 			   "/img/$1.$2",
 			   "image/$2");
+
+		// map to 'html/basename(uri)'
+		// inserted by 'MarkusE' -- verified with above, but not counterchecked yet!
+		MapUrl(app,
+			   "^/html.*/(.+)",
+			   "content",
+			   GetResourcePath(),
+			   "/html/$1",
+			   "text/html");
 
 		// Map favicon.ico into img directory
 		MapUrl(app,

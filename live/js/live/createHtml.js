@@ -100,13 +100,21 @@ function add2ndLine(s, shortText, description) {
   s.a += '</span>'
 }
 
-function addEventRec(s, eventprefix, eventid, title, folder, shortText, description, lf, cvd) {
+function addEventRec(s, eventprefix, eventid, title, folder, shortText, description, lf, cvd, sort, filter, flat, history_num_back) {
 // eventprefix == 'recording_' or 'event_'
 // lf: line feed
 // cvs: tr("Click to view details.")
   s.a += '<a href="epginfo.html?epgid='
   s.a += eventprefix
   s.a += eventid
+  s.a += '&sort='
+  s.a += sort
+  s.a += '&filter='
+  s.a += encodeURIComponent(filter)
+  s.a += '&flat='
+  s.a += flat
+  s.a += '&history_num_back='
+  s.a += history_num_back
   s.a += '" class="apopup" title="'
   if (description.length != 0) {
     s.a += description
@@ -132,23 +140,23 @@ function addColEventRec(s, times, eventprefix, eventid, title, folder, shortText
   s.a += times
   s.a += '</span></div>'
 // sec&third line: Link to event, event title, short text
-  addEventRec(s, eventprefix, eventid, title, folder, shortText, description, lf, cvd)
+  addEventRec(s, eventprefix, eventid, title, folder, shortText, description, lf, cvd, '', '', '', 1)
   s.a += '</div>'
 }
 
-function injectHdSdIcon(elementId, sdhd, channelName) {
+function injectHdSdIcon(elementId, sdhd, channelName, frameParams) {
   const s = Object.create(null);
   s.a = "";
-  addHdSdIcon(s, sdhd, channelName);
+  addHdSdIcon(s, sdhd, channelName, frameParams);
   document.getElementById(elementId).innerHTML = s.a;
   if (typeof liveEnhanced !== 'undefined') liveEnhanced.domReadySetup();
 }
 
-function injectErrorHdSdIcon(elementId, numErrors, durationDeviation, sdhd, channelName, duration, numTsFiles) {
+function injectErrorHdSdIcon(elementId, numErrors, durationDeviation, sdhd, channelName, duration, numTsFiles, frameParams) {
   const s = Object.create(null);
   s.a = "";
   addErrorIcon(s, numErrors, durationDeviation, duration, numTsFiles);
-  addHdSdIcon(s, sdhd, channelName);
+  addHdSdIcon(s, sdhd, channelName, frameParams);
   document.getElementById(elementId).innerHTML = s.a;
   if (typeof liveEnhanced !== 'undefined') liveEnhanced.domReadySetup();
 }
@@ -160,4 +168,153 @@ var imgDefer = document.getElementsByTagName('img');
       imgDefer[i].setAttribute('src',imgDefer[i].getAttribute('data-src'));
     }
   }
+}
+
+function clearCheckboxes(form) {
+// clearing checkboxes
+  var inputs = form.getElementsByTagName('input');
+  for (var i = 0; i<inputs.length; i++) {
+    if (inputs[i].type == 'checkbox') {
+        inputs[i].checked = false;
+    }
+  }
+}
+async function execute(url) {
+/*
+ * Input:
+ *   Url: url to the page triggering the execution of the function
+ *        this includes the parameters
+ *        '&async=1' will be appended (which is required to get an XML response,
+ *             actually we wait for the server response)
+ * Output:
+ *   error object (struct) with fields
+ *               - bool   success
+ *               - string error  (only if success == false). Human readable text
+*/
+  const response = await fetch(encodeURI(url + '&async=1'), {
+    method: "GET",
+    headers: {
+     "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
+  const req_responseXML = new window.DOMParser().parseFromString(await response.text(), "text/xml");
+  var ret_object = new Object();
+  ret_object.success = false;
+  if (!req_responseXML) {
+    ret_object.error = "invalid xml, no responseXML";
+    return ret_object;
+  }
+  var response_array = req_responseXML.getElementsByTagName("response");
+  if (response_array.length != 1) {
+    ret_object.error = "invalid xml, no response tag or several response tags";
+    return ret_object;
+  }
+  var response_child_nodes = response_array[0].childNodes;
+  if (response_child_nodes.length != 1) {
+    ret_object.error = "invalid xml, no child of response tag or several childs of response tag";
+    return ret_object;
+  }
+  if (response_child_nodes[0].nodeValue == "1") {
+    ret_object.success = true;
+    return ret_object;
+  }
+  if (response_child_nodes[0].nodeValue != "0") {
+    ret_object.error = "invalid xml, response node value " + response_child_nodes[0].nodeValue + " unknown";
+    return ret_object;
+  }
+
+  var error_array = req_responseXML.getElementsByTagName("error");
+  if (error_array.length != 1) {
+    ret_object.error = "invalid xml, no error tag or several error tags";
+    return ret_object;
+  }
+  var error_child_nodes = error_array[0].childNodes;
+  if (error_child_nodes.length != 1) {
+    ret_object.error = "invalid xml, no child of error tag or several childs of error tag";
+    return ret_object;
+  }
+  ret_object.error = error_child_nodes[0].nodeValue;
+  return ret_object;
+}
+async function delete_rec_back(recid, history_num_back)
+{
+  var ret_object = await execute('delete_recording.html?param=' + recid);
+  if (!ret_object.success) alert (ret_object.error);
+  history.go(-history_num_back);
+}
+function back_depending_referrer(back_epginfo, back_others) {
+  if (document.referrer.indexOf("epginfo.html?") != -1) {
+    history.go(-back_epginfo);
+  } else {
+    history.go(-back_others);
+  }
+}
+function RecordingsSt(s, level, displayFolder, data) {
+  var recs_param =  '';
+  for (obj_i of data) {
+    if (typeof recs[obj_i] === 'undefined') {
+      if (recs_param.length == 0) {
+        recs_param += 'r=';
+      } else {
+        recs_param += '&r=';
+      }
+      recs_param += obj_i;
+    }
+  }
+  if (recs_param.length == 0) {
+    RecordingsSt_int(s, level, displayFolder, data);
+  } else {
+    const request = new XMLHttpRequest();
+    request.open("POST", "get_recordings.html", false);
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send(recs_param);
+    eval(request.response);
+    RecordingsSt_int(s, level, displayFolder, data);
+  }
+}
+async function RecordingsSt_a(s, level, displayFolder, data) {
+  var recs_param =  '';
+  for (obj_i of data) {
+    if (typeof recs[obj_i] === 'undefined') {
+//      recs_param += '&r=';
+      recs_param += param_name_recs;
+      recs_param += obj_i;
+    }
+  }
+  if (recs_param.length == 0) {
+    RecordingsSt_int(s, level, displayFolder, data);
+  } else {
+    var recs_param_a = 'vdr_start=';
+    recs_param_a += vdr_start;
+    recs_param_a += '&recordings_tree_creation=';
+    recs_param_a += recordings_tree_creation;
+    recs_param_a += recs_param;
+    const response = await fetch("get_recordings.html", {
+      method: "POST",
+      headers: {
+       "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: recs_param_a,
+    });
+    const new_recs = await response.text();
+    eval(new_recs);
+    if (vdr_restart) {
+      location.reload();    
+    } else {
+      RecordingsSt_int(s, level, displayFolder, data);
+    }
+  }
+}
+async function rec_string_d_a(rec_ids) {
+  const st = Object.create(null)
+  st.a = ""
+  await RecordingsSt_a(st, rec_ids[0], rec_ids[1], rec_ids[2])
+  return st.a
+}
+
+function rec_string_d(rec_ids) {
+  const st = Object.create(null)
+  st.a = ""
+  RecordingsSt_int(st, rec_ids[0], rec_ids[1], rec_ids[2])
+  return st.a
 }

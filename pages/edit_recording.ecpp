@@ -14,6 +14,8 @@ using namespace vdrlive;
 	// input parameters
 	std::string recid;
 	std::string async;
+  int history_num_back;  //number of pages to go back to the recordings page
+      // call with 1 -> chancel will go back one page in history
 	// form parameters
 	std::string name = "";
 	std::string directory = "";
@@ -27,7 +29,6 @@ using namespace vdrlive;
 </%args>
 <%session scope="global">
 bool logged_in(false);
-std::string edit_rec_referer;
 std::string active_r;
 </%session>
 <%request scope="page">
@@ -40,7 +41,7 @@ const cRecording* recording;
 	if (!cUser::CurrentUserHasRightTo(UR_EDITRECS))
 		throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
 
-	bool ajaxReq = !async.empty() && (lexical_cast<int>(async) != 0);
+	bool ajaxReq = !async.empty() && (parse_int<int>(async) != 0);
 
 	std::string message;
 
@@ -51,23 +52,35 @@ const cRecording* recording;
 			throw HtmlError(tr("Couldn't find recording. Maybe you mistyped your request?"));
 	}
 
+  bool returnToReferer = false;
 	if (request.getMethod() == "POST") {
+    ++history_num_back;
 		if (name.empty())
 			message = tr("Please set a name for the recording!");
 		else if (recording) {
+			bool copy_only = false;
 			if (delresume == "delresume") LiveRecordingsManager()->DeleteResume(recording);
 			if (delmarks == "delmarks") LiveRecordingsManager()->DeleteMarks(recording);
-			bool copy_only = copy == "copy";
+      if (copy == "copy") copy_only = true;
 			if (newdir != ".") directory = newdir;
 			std::string filename = directory.empty() ? name : StringReplace(directory, "/", "~") + "~" + name;
 			if (LiveRecordingsManager()->MoveRecording(recording, FileSystemExchangeChars(filename, true), copy_only))
-				return reply.redirect(!edit_rec_referer.empty() ? edit_rec_referer : "recordings.html");
+        returnToReferer = true;
 			else
 				message = tr("Cannot copy, rename or move the recording.");
 		}
-	}
-
-//	if (message.empty()) edit_rec_referer = request.getHeader("Referer:", "recordings.html");
+  }
+  if (returnToReferer) {
+</%cpp>
+<!DOCTYPE html>
+<html>
+  <script type="text/javascript" src="js/live/createHtml.js"></script>
+  <script>
+    back_depending_referrer(2, <$ history_num_back $>);
+  </script>
+</html>
+<%cpp>
+	} else {
 
 	if (recording) {
 		std::string path = recording->Name();
@@ -92,6 +105,7 @@ const cRecording* recording;
 	if (!ajaxReq) {
 </%cpp>
 		<& pageelems.stylesheets &>
+    <& pageelems.create_html_js &>
 		<& pageelems.ajax_js &>
 <%cpp>
 	}
@@ -109,17 +123,6 @@ const cRecording* recording;
 	</head>
 	<body onload="adjustHeader()" onresize="adjustHeader()">
 <%cpp>
-if (!flat.empty() ) {
-edit_rec_referer = "recordings.html?sort=";
-edit_rec_referer.append(sort);
-edit_rec_referer.append("&filter=");
-edit_rec_referer.append(filter);
-edit_rec_referer.append("&flat=");
-edit_rec_referer.append(flat);
-  if (flat == "true") {
-    active_r = "recordings_flat";
-  } else active_r = "recordings";
-}
 	if (!ajaxReq) {
 </%cpp>
 		<& pageelems.logo &>
@@ -130,6 +133,7 @@ edit_rec_referer.append(flat);
 		<div class="inhalt">
 			<form method="post" name="edit_recording" id="<$ recid $>" action="edit_recording.ecpp">
 				<input type="hidden" name="recid" value="<$ recid $>"/>
+				<input type="hidden" name="history_num_back" value="<$ history_num_back $>"/>
 				<table class="formular" cellpadding="0" cellspacing="0">
 					<tr class="head">
 						<td class="toprow leftcol rightcol" colspan="2"><div class="boxheader"><div><div class="caption"><$ tr("Edit recording") $></div></div></div></td>
@@ -141,7 +145,7 @@ edit_rec_referer.append(flat);
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Directory") $>:</div></td>
 						<td class="rightcol">
-							<select name="directory" size="1" id="directory">
+							<select name="directory" size="1" id="directory" style="margin-top: 5px">
 <%cpp>
         RecordingsTreePtr recordingsTree(LiveRecordingsManager()->GetRecordingsTree());
 	for (const auto &dir: recordingsTree->getAllDirs() ) {
@@ -183,21 +187,43 @@ if (recording && recording->Info()->Description()) {
 						<td class="rightcol"><$ recording->Info()->Description() $></td>
 					</tr>
 <%cpp>
+
 }
 if (recording && recording->Info()->Aux()) {
+  std::string aux_data;
+  cGetAutoTimerReason getAutoTimerReason;
+  getAutoTimerReason.recording_in = recording;
+  getAutoTimerReason.requestRecording = false;
+  if (getAutoTimerReason.call(LiveSetup().GetPluginScraper()) && getAutoTimerReason.createdByTvscraper) {
+    AppendHtmlEscapedAndCorrectNonUTF8(aux_data, getAutoTimerReason.reason);
+  } else {
+    cSv epgsearchinfo = partInXmlTag(recording->Info()->Aux(), "epgsearch");
+    if (!epgsearchinfo.empty()) {
+      AppendHtmlEscapedAndCorrectNonUTF8(aux_data, partInXmlTag(epgsearchinfo, "searchtimer") );
+    }
+  }
+  if (!aux_data.empty()) {
+</%cpp>
+					<tr>
+						<td class="label leftcol"><div class="withmargin"><$ tr("Searchtimer") $>:</div></td>
+						<td class="rightcol"><$ aux_data $></td>
+					</tr>
+<%cpp>
+  } else {
 </%cpp>
 					<tr>
 						<td class="label leftcol"><div class="withmargin"><$ tr("Auxiliary info") $>:</div></td>
 						<td class="rightcol"><$ recording->Info()->Aux() $></td>
 					</tr>
 <%cpp>
+  }
 }
 </%cpp>
 					<tr>
 						<td class="buttonpanel leftcol rightcol bottomrow" colspan="2">
 							<div class="withmargin">
 							<button class="green" type="submit"><$ tr("Save") $></button>
-							<button class="red" type="button" onclick="history.back()"><$ tr("Cancel") $></button>
+							<button class="red" type="button" onclick="back_depending_referrer(1, <$ history_num_back $>)"><$ tr("Cancel") $></button>
 							</div>
 						</td>
 					</tr>
@@ -209,4 +235,5 @@ if (recording && recording->Info()->Aux()) {
 		</div>
 	</body>
 </html>
+% }
 <%include>page_exit.eh</%include>

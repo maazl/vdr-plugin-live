@@ -1,9 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include "tools.h"
-#include "xxhash32.h"
+#include "xxhash.h"
 #include "setup.h"
-
 
 #include "md5.h"
 
@@ -109,84 +108,13 @@ template<class T>
 template void AppendHtmlEscapedAndCorrectNonUTF8<std::string>(std::string &target, const char* s, const char *end, bool tooltip);
 template void AppendHtmlEscapedAndCorrectNonUTF8<cLargeString>(cLargeString &target, const char* s, const char *end, bool tooltip);
 
-  void AppendCorrectNonUTF8(std::string &target, const char* s){
-// append c-string s to target
-// replace invalid UTF8 characters with ?
-    if(!s) return;
-    int l = 0;                    // length of current utf8 codepoint
-    size_t i = 0;                 // number of not yet appended chars
-    const char* notAppended = s;  // position of the first character which is not yet appended
-    for (const char* current = s; *current; current+=l) {
-      l = utf8CodepointIsValid(current);
-      if( l > 0) { i += l; continue; }
-// invalid UTF8
-      target.append(notAppended, i);
-      target.append("?");
-      notAppended = notAppended + i + 1;
-      i = 0;
-      l = 1;
-      }
-    target.append(notAppended, i);
-  }
-
-  wint_t getNextUtfCodepoint(const char *&p) {
-// get next codepoint, and increment p
-// 0 is returned at end of string, and p will point to the end of the string (0)
-    if(!p || !*p) return 0;
-    int l = utf8CodepointIsValid(p);
-    if( l == 0 ) { p++; return '?'; }
-    return Utf8ToUtf32(p, l);
-  }
-
-	int utf8CodepointIsValid(const char *p){
-// In case of invalid UTF8, return 0
-// otherwise, return number of characters for this UTF codepoint
-	  static const uint8_t LEN[] = {2,2,2,2,3,3,4,0};
-
-	  int len = ((*p & 0xC0) == 0xC0) * LEN[(*p >> 3) & 7] + ((*p | 0x7F) == 0x7F);
-	  for (int k=1; k < len; k++) if ((p[k] & 0xC0) != 0x80) len = 0;
-	  return len;
-	}
-
-  wint_t Utf8ToUtf32(const char *&p, int len) {
-  // assumes, that uft8 validity checks have already been done. len must be provided. call utf8CodepointIsValid first
-  // change p to position of next codepoint (p = p + len)
-    static const uint8_t FF_MSK[] = {0xFF >>0, 0xFF >>0, 0xFF >>3, 0xFF >>4, 0xFF >>5, 0xFF >>0, 0xFF >>0, 0xFF >>0};
-    wint_t val = *p & FF_MSK[len];
-    const char *q = p + len;
-    for (p++; p < q; p++) val = (val << 6) | (*p & 0x3F);
-    return val;
-  }
-	void AppendUtfCodepoint(std::string &target, wint_t codepoint){
-	  if (codepoint <= 0x7F){
-	    target.push_back( (char) (codepoint) );
-	    return;
-	  }
-	  if (codepoint <= 0x07FF) {
-	    target.push_back( (char) (0xC0 | (codepoint >> 6 ) ) );
-	    target.push_back( (char) (0x80 | (codepoint & 0x3F)) );
-	    return;
-	  }
-	  if (codepoint <= 0xFFFF) {
-	    target.push_back( (char) (0xE0 | ( codepoint >> 12)) );
-	    target.push_back( (char) (0x80 | ((codepoint >>  6) & 0x3F)) );
-	    target.push_back( (char) (0x80 | ( codepoint & 0x3F)) );
-	    return;
-	  }
-	    target.push_back( (char) (0xF0 | ((codepoint >> 18) & 0x07)) );
-	    target.push_back( (char) (0x80 | ((codepoint >> 12) & 0x3F)) );
-	    target.push_back( (char) (0x80 | ((codepoint >>  6) & 0x3F)) );
-	    target.push_back( (char) (0x80 | ( codepoint & 0x3F)) );
-	    return;
-	}
-
 template<typename T>
 	void AppendDuration(T &target, char const* format, int duration)
 	{
 		int minutes = (duration + 30) / 60;
 		int hours = minutes / 60;
 		minutes %= 60;
-    AppendFormatted(target, format, hours, minutes);
+    stringAppendFormated(target, format, hours, minutes);
 	}
 template void AppendDuration<std::string>(std::string &target, char const* format, int duration);
 template void AppendDuration<cLargeString>(cLargeString &target, char const* format, int duration);
@@ -234,9 +162,9 @@ template void AppendDuration<cLargeString>(cLargeString &target, char const* for
     return result;
 	}
 
-	std::string StringReplace( std::string const& text, std::string const& substring, std::string const& replacement )
+	std::string StringReplace(cSv text, cSv substring, cSv replacement)
 	{
-		std::string result = text;
+		std::string result(text);
 		size_t pos = 0;
 		while ( ( pos = result.find( substring, pos ) ) != std::string::npos ) {
 			result.replace( pos, substring.length(), replacement );
@@ -245,29 +173,20 @@ template void AppendDuration<cLargeString>(cLargeString &target, char const* for
 		return result;
 	}
 
-	std::vector<std::string> StringSplit( std::string const& text, char delimiter )
+	std::vector<std::string> StringSplit(cSv text, char delimiter )
 	{
 		std::vector<std::string> result;
 		size_t last = 0, pos;
 		while ( ( pos = text.find( delimiter, last ) ) != std::string::npos ) {
-			result.push_back( text.substr( last, pos - last ) );
+			result.emplace_back( text.substr( last, pos - last ) );
 			last = pos + 1;
 		}
 		if ( last < text.length() )
-			result.push_back( text.substr( last ) );
+			result.emplace_back( text.substr( last ) );
 		return result;
 	}
 
-	int StringToInt( std::string const& string, int base )
-	{
-		char* end;
-		int result = strtol( string.c_str(), &end, base );
-		if ( *end == '\0' )
-			return result;
-		return 0;
-	}
-
-	std::string StringWordTruncate(const std::string& input, size_t maxLen, bool& truncated)
+	cSv StringWordTruncate(cSv input, size_t maxLen, bool& truncated)
 	{
 		if (input.length() <= maxLen)
 		{
@@ -275,42 +194,34 @@ template void AppendDuration<cLargeString>(cLargeString &target, char const* for
 			return input;
 		}
 		truncated = true;
-		std::string result = input.substr(0, maxLen);
+		cSv result = input.substr(0, maxLen);
 		size_t pos = result.find_last_of(" \t,;:.\n?!'\"/\\()[]{}*+-");
 		return result.substr(0, pos);
 	}
 
-	std::string StringFormatBreak(std::string const& input)
+	std::string StringFormatBreak(cSv input)
 	{
-		return StringReplace( input, "\n", "<br/>" );
+		return StringReplace(input, "\n", "<br/>" );
 	}
 
-	std::string StringEscapeAndBreak(std::string const& input, const char* nl)
+	std::string StringEscapeAndBreak(cSv input, const char* nl)
 	{
 		std::stringstream plainBuilder;
-		HtmlEscOstream builder(plainBuilder);
+		HtmlEscOstream builder(plainBuilder);  // see https://web.archive.org/web/20151208133551/http://www.tntnet.org/apidoc_master/html/classtnt_1_1HtmlEscOstream.html
 		builder << input;
 		return StringReplace(plainBuilder.str(), "\n", nl);
 	}
 
-	std::string StringTrim(std::string const& str)
+	cSv StringTrim(cSv str)
 	{
-		std::string res = str;
-		size_t pos = res.find_last_not_of(' ');
-		if(pos != std::string::npos) {
-			res.erase(pos + 1);
-			pos = res.find_first_not_of(' ');
-			if(pos != std::string::npos) res.erase(0, pos);
-		}
-		else res.erase(res.begin(), res.end());
-		return res;
-	}
+		size_t pos = str.find_last_not_of(' ');
+    if (pos == std::string::npos) return cSv();
+    cSv trailBlankRemoved = str.substr(0, pos+1);
+    pos = trailBlankRemoved.find_first_not_of(' ');
+    if (pos == std::string::npos) return cSv();
+    return trailBlankRemoved.substr(pos);
+  }
 
-
-const char *getText(const char *shortText, const char *description) {
-  if (shortText && *shortText) return shortText;
-  return description;
-}
 // Spielfilm Thailand / Deutschland / Großbritannien 2015 (Rak ti Khon Kaen)
 #define MAX_LEN_ST 70
 template<class T>
@@ -352,13 +263,6 @@ template<class T>
 template void AppendTextTruncateOnWord<std::string>(std::string &target, const char *text, int max_len, bool tooltip);
 template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const char *text, int max_len, bool tooltip);
 
-	std::string ZeroPad(int number)
-	{
-		std::stringstream os;
-		os << std::setw(2) << std::setfill('0') << number;
-		return os.str();
-	}
-
 	std::string MD5Hash(std::string const& str)
 	{
 		char* szInput = strdup(str.c_str());
@@ -367,22 +271,44 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
 		std::string res = szRes;
 		free(szRes);
 		return res;
-
 	}
 
-	std::string xxHash32(std::string const& str)
+	std::string xxHash32(cSv str)
 	{
-	  char res[9];
-	  uint32_t result = XXHash32::hash(str.c_str(), str.length(), 20);
-	  res[8] = 0;
-      for (int i = 7; i >= 0; i--) {
-	    int dig = result % 16;
-      if (dig < 10) res[i] = dig + '0';
-      else          res[i] = dig - 10 + 'A';
-      result /= 16;
-    }
-    return res;
+	  char res[8];
+    stringhelpers_internal::addCharsHex(res, 8, XXH32(str.data(), str.length(), 20) );
+    return std::string(res, 8);
 	}
+
+  XXH64_hash_t parse_hex_64(cSv str) {
+    if (str.length() != 16) {
+      esyslog("live: ERROR in parse_hex_64, hex = \"%.*s\" is not 16 chars long", (int)str.length(), str.data());
+      return 0;
+    }
+    size_t parsed_chars;
+    XXH64_hash_t result = parse_hex<XXH64_hash_t>(str, &parsed_chars);
+    if (parsed_chars == 16) return result;
+    esyslog("live: ERROR in  parse_hex_64, hex = \"%.*s\" contains invalid characters", (int)str.length(), str.data());
+    return 0;
+  }
+  XXH128_hash_t parse_hex_128(cSv str) {
+    XXH128_hash_t result;
+    if (str.length() != 32) {
+      esyslog("live: ERROR in parse_hex_128, hex = \"%.*s\" is not 32 chars long", (int)str.length(), str.data());
+      result.low64 = 0;
+      result.high64 = 0;
+      return result;
+    }
+    size_t parsed_chars_h, parsed_chars_l;
+    result.high64 = parse_hex<XXH64_hash_t>(str.substr(0, 16), &parsed_chars_h);
+    result.low64  = parse_hex<XXH64_hash_t>(str.substr(16),    &parsed_chars_l);
+    if (parsed_chars_l == 16 && parsed_chars_h == 16) return result;
+    esyslog("live: ERROR in  parse_hex_128, hex = \"%.*s\" contains invalid characters", (int)str.length(), str.data());
+    result.low64 = 0;
+    result.high64 = 0;
+    return result;
+  }
+
 
 #define HOURS(x) ((x)/100)
 #define MINUTES(x) ((x)%100)
@@ -415,7 +341,7 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
 	time_t GetTimeT(std::string timestring) // timestring in HH:MM
 	{
 		timestring = StringReplace(timestring, ":", "");
-		int iTime = lexical_cast<int>( timestring );
+		int iTime = parse_int<int>( timestring );
 		struct tm tm_r;
 		time_t t = time(NULL);
 		tm* tmnow = localtime_r(&t, &tm_r);
@@ -453,21 +379,21 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
     }
 	};
 
-	std::string StringUrlEncode( std::string const& input )
+	std::string StringUrlEncode(cSv input)
 	{
 		std::stringstream ostr;
-		for_each( input.begin(), input.end(), urlencoder( ostr ) );
+		std::for_each (input.begin(), input.end(), urlencoder( ostr ) );
 		return ostr.str();
 	}
 
 // return the time value as time_t from <datestring> formatted with <format>
-	time_t GetDateFromDatePicker(std::string const& datestring, std::string const& format)
+	time_t GetDateFromDatePicker(cSv datestring, cSv format)
 	{
 		if (datestring.empty())
 			return 0;
-		int year = lexical_cast<int>(datestring.substr(format.find("yyyy"), 4));
-		int month = lexical_cast<int>(datestring.substr(format.find("mm"), 2));
-		int day = lexical_cast<int>(datestring.substr(format.find("dd"), 2));
+		int year = parse_int<int>(datestring.substr(format.find("yyyy"), 4));
+		int month = parse_int<int>(datestring.substr(format.find("mm"), 2));
+		int day = parse_int<int>(datestring.substr(format.find("dd"), 2));
 		struct tm tm_r;
 		tm_r.tm_year = year - 1900;
 		tm_r.tm_mon = month -1;
@@ -478,10 +404,10 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
 	}
 
 // format is in datepicker format ('mm' for month, 'dd' for day, 'yyyy' for year)
-	std::string DatePickerToC(time_t date, std::string const& format)
+	std::string DatePickerToC(time_t date, cSv format)
 	{
 		if (date == 0) return "";
-		std::string cformat = format;
+		std::string cformat(format);
 		cformat = StringReplace(cformat, "mm", "%m");
 		cformat = StringReplace(cformat, "dd", "%d");
 		cformat = StringReplace(cformat, "yyyy", "%Y");
@@ -511,45 +437,46 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
     intToTimeString(t, tm);
     return t;
   }
-  std::string charToString(const char *s) {
-    if (!s) return "";
-    return s;
-  }
 
-	std::string EncodeDomId(std::string const & toEncode, char const * from, char const * to)
+	std::string EncodeDomId(cSv toEncode, char const * from, char const * to)
 	{
-		std::string encoded = toEncode;
+		std::string encoded(toEncode);
 		for (; *from && *to; from++, to++) {
 			replace(encoded.begin(), encoded.end(), *from, *to);
 		}
 		return encoded;
 	}
 
-	std::string DecodeDomId(std::string const & toDecode, char const * from, char const * to)
+	std::string DecodeDomId(cSv toDecode, char const * from, char const * to)
 	{
-		std::string decoded = toDecode;
+		std::string decoded(toDecode);
 		for (; *from && *to; from++, to++) {
 			replace(decoded.begin(), decoded.end(), *from, *to);
 		}
 		return decoded;
 	}
 
-	std::string FileSystemExchangeChars(std::string const & s, bool ToFileSystem)
+	std::string FileSystemExchangeChars(cSv s, bool ToFileSystem)
 	{
-		char *str = strdup(s.c_str());
+    if (s.empty()) return std::string();
+    char *str = reinterpret_cast<char*>(std::malloc(s.length() + 1)); // vdr ExchangeChars needs a pointer to data allocated with malloc
+    if (!str) {
+      esyslog("live, ERROR: out of memory in FileSystemExchangeChars");
+      return std::string(s);
+    }
+    std::memcpy(str, s.data(), s.length());
+    str[s.length()] = 0;
 		str = ExchangeChars(str, ToFileSystem);
 		std::string data = str;
-		if (str) {
-			free(str);
-		}
+		std::free(str);
 		return data;
 	}
 
-	bool MoveDirectory(std::string const & sourceDir, std::string const & targetDir, bool copy)
+	bool MoveDirectory(cSv sourceDir, cSv targetDir, bool copy)
 	{
 		const char* delim = "/";
-		std::string source = sourceDir;
-		std::string target = targetDir;
+		std::string source(sourceDir);
+		std::string target(targetDir);
 
 		// add missing directory delimiters
 		if (source.compare(source.size() - 1, 1, delim) != 0) {
@@ -559,197 +486,157 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
 			target += "/";
 		}
 
-		if (source == target)
-			return true;
-
-		// validate target directory
-		if (target.find(source) != std::string::npos) {
-			esyslog("live: cannot move under sub-directory\n");
-			return false;
-		}
-
-		if (!MakeDirs(target.c_str(), true)) {
-			esyslog("live: cannot create directory \"%s\"", target.c_str());
-			return false;
-		}
-
-		struct stat st1, st2;
-		stat(source.c_str(), &st1);
-		stat(target.c_str(),&st2);
-		if (!copy && (st1.st_dev == st2.st_dev)) {
-#if APIVERSNUM > 20101
-			if (!cVideoDirectory::RenameVideoFile(source.c_str(), target.c_str())) {
-#else
-			if (!RenameVideoFile(source.c_str(), target.c_str())) {
-#endif
-				esyslog("live: rename failed from \"%s\" to \"%s\"", source.c_str(), target.c_str());
+		if (source != target) {
+			// validate target directory
+			if (target.find(source) != std::string::npos) {
+				esyslog("live: cannot move under sub-directory\n");
 				return false;
 			}
-		}
-		else {
-			int required = DirSizeMB(source.c_str());
-			int available = FreeDiskSpaceMB(target.c_str());
+			if (!MakeDirs(target.c_str(), true)) {
+				esyslog("live: cannot create directory %s", target.c_str());
+				return false;
+			}
 
-			// validate free space
-			if (required < available) {
-				cReadDir d(source.c_str());
-				struct dirent *e;
-				bool success = true;
-
-				// allocate copying buffer
-				const int len = 1024 * 1024;
-				char *buffer = MALLOC(char, len);
-				if (!buffer) {
-					esyslog("live: cannot allocate renaming buffer");
+			struct stat st1, st2;
+			stat(source.c_str(), &st1);
+			stat(target.c_str(), &st2);
+			if (!copy && (st1.st_dev == st2.st_dev)) {
+				if (!cVideoDirectory::RenameVideoFile(source.c_str(), target.c_str())) {
+					esyslog("live: rename failed from %s to %s", source.c_str(), target.c_str());
 					return false;
-				}
-
-				// loop through all files, but skip all subdirectories
-				while ((e = d.Next()) != NULL) {
-					// skip generic entries
-					if (strcmp(e->d_name, ".") && strcmp(e->d_name, "..") && strcmp(e->d_name, "lost+found")) {
-						std::string sourceFile = source + e->d_name;
-						std::string targetFile = target + e->d_name;
-
-						// copy only regular files
-						if (!stat(sourceFile.c_str(), &st1) && S_ISREG(st1.st_mode)) {
-							int r = -1, w = -1;
-							cUnbufferedFile *inputFile = cUnbufferedFile::Create(sourceFile.c_str(), O_RDONLY | O_LARGEFILE);
-							cUnbufferedFile *outputFile = cUnbufferedFile::Create(targetFile.c_str(), O_RDWR | O_CREAT | O_LARGEFILE);
-
-							// validate files
-							if (!inputFile || !outputFile) {
-								esyslog("live: cannot open file \"%s\" or \"%s\"", sourceFile.c_str(), targetFile.c_str());
-								success = false;
-								break;
-							}
-
-							// do actual copy
-							dsyslog("live: copying \"%s\" to \"%s\"", sourceFile.c_str(), targetFile.c_str());
-							do {
-								r = inputFile->Read(buffer, len);
-								if (r > 0)
-									w = outputFile->Write(buffer, r);
-								else
-									w = 0;
-							} while (r > 0 && w > 0);
-							DELETENULL(inputFile);
-							DELETENULL(outputFile);
-
-							// validate result
-							if (r < 0 || w < 0) {
-								success = false;
-								break;
-							}
-						}
-					}
-				}
-
-				// release allocated buffer
-				free(buffer);
-
-				// delete all created target files and directories
-				if (!success) {
-					size_t found = target.find_last_of(delim);
-					if (found != std::string::npos) {
-						target = target.substr(0, found);
-					}
-					if (!RemoveFileOrDir(target.c_str(), true)) {
-						esyslog("live: cannot remove target \"%s\"", target.c_str());
-					}
-					found = target.find_last_of(delim);
-					if (found != std::string::npos) {
-						target = target.substr(0, found);
-					}
-					if (!RemoveEmptyDirectories(target.c_str(), true)) {
-						esyslog("live: cannot remove target directory \"%s\"", target.c_str());
-					}
-					esyslog("live: copying failed");
-					return false;
-				}
-				else if (!copy && !RemoveFileOrDir(source.c_str(), true)) { // delete source files
-					esyslog("live: cannot remove source directory \"%s\"", source.c_str());
-					return false;
-				}
-
-				// delete all empty source directories
-				if (!copy) {
-					size_t found = source.find_last_of(delim);
-					if (found != std::string::npos) {
-						source = source.substr(0, found);
-#if APIVERSNUM > 20101
-						while (source != cVideoDirectory::Name()) {
-#else
-						while (source != VideoDirectory) {
-#endif
-							found = source.find_last_of(delim);
-							if (found == std::string::npos)
-								break;
-							source = source.substr(0, found);
-							if (!RemoveEmptyDirectories(source.c_str(), true))
-								break;
-						}
-					}
 				}
 			}
 			else {
-				esyslog("live: %s requires %dMB - only %dMB available", copy ? "moving" : "copying", required, available);
-				// delete all created empty target directories
-				size_t found = target.find_last_of(delim);
-				if (found != std::string::npos) {
-					target = target.substr(0, found);
-#if APIVERSNUM > 20101
-					while (target != cVideoDirectory::Name()) {
-#else
-					while (target != VideoDirectory) {
-#endif
+				int required = DirSizeMB(source.c_str());
+				int available = FreeDiskSpaceMB(target.c_str());
+
+				// validate free space
+				if (required < available) {
+					cReadDir d(source.c_str());
+					struct dirent *e;
+					bool success = true;
+
+					// allocate copying buffer
+					const int len = 1024 * 1024;
+					char *buffer = MALLOC(char, len);
+					if (!buffer) {
+						esyslog("live: cannot allocate renaming buffer");
+						return false;
+					}
+
+					// loop through all files, but skip all subdirectories
+					while ((e = d.Next()) != NULL) {
+						// skip generic entries
+						if (strcmp(e->d_name, ".") && strcmp(e->d_name, "..") && strcmp(e->d_name, "lost+found")) {
+							std::string sourceFile = source + e->d_name;
+							std::string targetFile = target + e->d_name;
+
+							// copy only regular files
+							if (!stat(sourceFile.c_str(), &st1) && S_ISREG(st1.st_mode)) {
+								int r = -1, w = -1;
+								cUnbufferedFile *inputFile = cUnbufferedFile::Create(sourceFile.c_str(), O_RDONLY | O_LARGEFILE);
+								cUnbufferedFile *outputFile = cUnbufferedFile::Create(targetFile.c_str(), O_RDWR | O_CREAT | O_LARGEFILE);
+
+								// validate files
+								if (!inputFile || !outputFile) {
+									esyslog("live: cannot open file %s or %s", sourceFile.c_str(), targetFile.c_str());
+									success = false;
+									break;
+								}
+
+								// do actual copy
+								dsyslog("live: copying %s to %s", sourceFile.c_str(), targetFile.c_str());
+								do {
+									r = inputFile->Read(buffer, len);
+									if (r > 0)
+										w = outputFile->Write(buffer, r);
+									else
+										w = 0;
+								} while (r > 0 && w > 0);
+								DELETENULL(inputFile);
+								DELETENULL(outputFile);
+
+								// validate result
+								if (r < 0 || w < 0) {
+									success = false;
+									break;
+								}
+							}
+						}
+					}
+
+					// release allocated buffer
+					free(buffer);
+
+					// delete all created target files and directories
+					if (!success) {
+						size_t found = target.find_last_of(delim);
+						if (found != std::string::npos) {
+							target = target.substr(0, found);
+						}
+						if (!RemoveFileOrDir(target.c_str(), true)) {
+							esyslog("live: cannot remove target %s", target.c_str());
+						}
 						found = target.find_last_of(delim);
-						if (found == std::string::npos)
-							break;
-						target = target.substr(0, found);
-						if (!RemoveEmptyDirectories(target.c_str(), true))
-							break;
+						if (found != std::string::npos) {
+							target = target.substr(0, found);
+						}
+						if (!RemoveEmptyDirectories(target.c_str(), true)) {
+							esyslog("live: cannot remove target directory %s", target.c_str());
+						}
+						esyslog("live: copying failed");
+						return false;
+					}
+					else if (!copy && !RemoveFileOrDir(source.c_str(), true)) { // delete source files
+						esyslog("live: cannot remove source directory %s", source.c_str());
+						return false;
+					}
+
+					// delete all empty source directories
+					if (!copy) {
+						size_t found = source.find_last_of(delim);
+						if (found != std::string::npos) {
+							source = source.substr(0, found);
+							while (source != cVideoDirectory::Name()) {
+								found = source.find_last_of(delim);
+								if (found == std::string::npos)
+									break;
+								source = source.substr(0, found);
+								if (!RemoveEmptyDirectories(source.c_str(), true))
+									break;
+							}
+						}
 					}
 				}
-				return false;
+				else {
+					esyslog("live: %s requires %dMB - only %dMB available", copy ? "moving" : "copying", required, available);
+					// delete all created empty target directories
+					size_t found = target.find_last_of(delim);
+					if (found != std::string::npos) {
+						target = target.substr(0, found);
+						while (target != cVideoDirectory::Name()) {
+							found = target.find_last_of(delim);
+							if (found == std::string::npos)
+								break;
+							target = target.substr(0, found);
+							if (!RemoveEmptyDirectories(target.c_str(), true))
+								break;
+						}
+					}
+					return false;
+				}
 			}
 		}
 
 		return true;
 	}
 
-  template<class T> int toCharsU(char *buffer, T i0) {
-// notes:
-//    i0 must be unsigned !!!!
-//    return number of characters written to buffer  (don't count 0 terminator)
-//    if buffer==NULL: don't write anything, just return the number
-//    sizeof(buffer) must be >= this return value + 1 !! This is not checked ....
-    int numChars;
-    int i = i0;
-    if (i < 10) numChars = 1;
-    else for (numChars = 0; i; i /= 10) numChars++;
-    if (!buffer) return numChars;
-    char *bufferEnd = buffer + numChars;
-    i = i0;
-    *bufferEnd = 0;
-    if (i < 10) *(--bufferEnd) = '0' + i;
-    else for (; i; i /= 10) *(--bufferEnd) = '0' + (i%10);
-    return numChars;
-  }
-  template int toCharsU<unsigned int>(char *buffer, unsigned int i0);
-  template<class T> int toCharsI(char *buffer, T i) {
-    if (i >= 0) return toCharsU(buffer, i);
-    if (buffer) *(buffer++) = '-';
-    return toCharsU(buffer, -1*i) + 1;
-  }
-  template int toCharsI<int>(char *buffer, int i);
-
-  std::string ScraperImagePath2Live(const std::string &path){
+  cSv ScraperImagePath2Live(cSv path) {
     int tvscraperImageDirLength = LiveSetup().GetTvscraperImageDir().length();
-    if (tvscraperImageDirLength == 0) return "";
+    if (tvscraperImageDirLength == 0) return cSv();
     if (path.compare(0, tvscraperImageDirLength, LiveSetup().GetTvscraperImageDir()) != 0) {
-      esyslog("live: ERROR, image path %s does not start with %s", path.c_str(), LiveSetup().GetTvscraperImageDir().c_str());
-      return "";
+      esyslog("live: ERROR, image path %.*s does not start with %s", (int)path.length(), path.data(), LiveSetup().GetTvscraperImageDir().c_str());
+      return cSv();
     }
     return path.substr(tvscraperImageDirLength);
   }
@@ -759,18 +646,4 @@ template void AppendTextTruncateOnWord<cLargeString>(cLargeString &target, const
     if (!pScraper) return false;
     return pScraper->Service(Id, Data);
   }
-// XML tools ********************************
-
-// returns the content of <element>...</element>
-	std::string GetXMLValue( std::string const& xml, std::string const& element )
-	{
-		std::string start = "<" + element + ">";
-		std::string end = "</" + element + ">";
-		size_t startPos = xml.find(start);
-		if (startPos == std::string::npos) return "";
-		size_t endPos = xml.find(end);
-		if (endPos == std::string::npos) return "";
-		return xml.substr(startPos + start.size(), endPos - startPos - start.size());
-	}
-
 } // namespace vdrlive

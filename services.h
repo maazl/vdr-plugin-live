@@ -78,11 +78,37 @@ public:
     const cEvent *event;             // check type for this event 
     const cRecording *recording;     // or for this recording
 //out
-    tvType type;                	 //typeSeries or typeMovie
+    tvType type;                	 //tSeries or tMovie or tNone
     int movieId;
     int seriesId;
     int episodeId;
 };
+
+// Data structure for enviromment ("GetEnvironment" call)
+
+class cEnvironment
+{
+  public:
+//in: nothing, no input required
+//out
+    std::string basePath;  // All images are in this path or subdirectories. This was given to the plugin with --dir, or is the default cache directory for the plugin.
+    std::string seriesPath;
+    std::string moviesPath;
+};
+
+// Data structure for service "GetScraperImageDir"
+// deprecated, please use "GetEnvironment". Note: GetEnvironment is also available in scraper2vdr
+class cGetScraperImageDir {
+  public:
+//in: nothing, no input required
+//out
+  std::string scraperImageDir;   // this was given to the plugin with --dir, or is the default cache directory for the plugin. It will always end with a '/'
+  cPlugin *call(cPlugin *pScraper = NULL) {
+    if (!pScraper) return cPluginManager::CallFirstService("GetScraperImageDir", this);
+    else return pScraper->Service("GetScraperImageDir", this)?pScraper:NULL;
+  }
+};
+
 
 // Data structures for full series and episode information
 //     service  "GetMovie"
@@ -174,7 +200,7 @@ public:
     const cEvent *event;             // check type for this event
     const cRecording *recording;     // check type for this recording
 //out
-    tvType type;                     //typeSeries or typeMovie
+    tvType type;                     // tSeries or tMovie or tNone
     cTvMedia poster;
     cTvMedia banner;
 };
@@ -199,28 +225,24 @@ public:
     cTvMedia poster;
 };
 
-// Data structure for enviromment ("GetEnvironment" call)
-class cEnvironment
-{
-  public:
-//in: nothing, no input required
-//out
-    std::string basePath;  // All images are in this path or subdirectories. This was given to the plugin with --dir, or is the default cache directory for the plugin.
-    std::string seriesPath;
-    std::string moviesPath;
-};
+// NEW interface, used by live and others ======================================
 
-// NEW interface, used by live =========================================================
-
-// Data structure for service "GetScraperImageDir"
-class cGetScraperImageDir {
+// Data structure for service "GetAutoTimerReason"
+class cGetAutoTimerReason {
 public:
-//in: nothing, no input required
+//in:
+  const cTimer *timer = nullptr;            // only timer OR recording must be provided
+  const cRecording *recording_in = nullptr; // information about the timer creating this recoring is provided
+  bool requestRecording = false;  // set this to true if you need the cRecording object
 //out
-  std::string scraperImageDir;   // this was given to the plugin with --dir, or is the default cache directory for the plugin. It will always end with a '/'
+  bool createdByTvscraper;    // if this is false, please ignore all other return values
+  std::string reason;         // translated, e.g. "Verbessern von Action~Salt"
+                              // If requestRecording == true, the name of the recording at the end will be omitted. e.g. "Verbessern von"
+  std::string recordingName;  // with folder, e.g. "Action~Salt". Determined during creation of timer -> available even if recording == nullptr
+  const cRecording *recording; // only if requestRecording == true. Can be nullptr, e.g. if the recording was deleted after the timer was created.
   cPlugin *call(cPlugin *pScraper = NULL) {
-    if (!pScraper) return cPluginManager::CallFirstService("GetScraperImageDir", this);
-    else return pScraper->Service("GetScraperImageDir", this)?pScraper:NULL;
+    if (!pScraper) return cPluginManager::CallFirstService("GetAutoTimerReason", this);
+    else return pScraper->Service("GetAutoTimerReason", this)?pScraper:NULL;
   }
 };
 

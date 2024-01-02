@@ -21,36 +21,6 @@ void cLargeString::init(size_t initialSize, size_t increaseSize, bool debugBuffe
   m_buffer_end = m_s + initialSize;
   m_string_end = m_s;
 }
-void cLargeString::loadFile(const char *filename, bool *exists) {
-  if (exists) *exists = false;
-  if (!filename) return;
-  struct stat buffer;                                                                                                                       
-  if (stat(filename, &buffer) != 0) return;
-
-// file exists, length buffer.st_size
-  if (exists) *exists = true;
-  if (buffer.st_size == 0) return;  // empty file
-  m_s = (char *) malloc((size_t)(buffer.st_size + 1) * sizeof(char));  // add one. So we can add the 0 string terminator
-  if (!m_s) {
-    esyslog("cLargeString::loadFile, ERROR out of memory, name = %.*s, filename = %s, requested size = %zu", nameLen(), nameData(), filename, (size_t)(buffer.st_size + 1));
-    throw std::runtime_error("cLargeString::cLargeString, ERROR out of memory (file)");
-    return;
-  }
-  m_buffer_end = m_s + buffer.st_size + 1;
-  m_string_end = m_s;
-  FILE *f = fopen(filename, "rb");
-  if (!f) {
-    esyslog("cLargeString::loadFile, ERROR: stat OK, fopen fails, filename %s", filename);
-    return;
-  }
-  size_t num_read = fread (m_s, 1, (size_t)buffer.st_size, f);
-  fclose(f);
-  m_string_end = m_s + num_read;
-  if (num_read != (size_t)buffer.st_size) {
-    esyslog("cLargeString::loadFile, ERROR: num_read = %zu, buffer.st_size = %zu, ferror %i, name = %.*s, filename %s", num_read, (size_t)buffer.st_size, ferror(f), nameLen(), nameData(), filename);
-    m_string_end = m_s + std::min(num_read, (size_t)buffer.st_size);
-  }
-}
 
 cLargeString::~cLargeString() {
   if (m_s == m_s_initial) return;
@@ -97,42 +67,6 @@ bool cLargeString::finishBorrow() {
   return true;
 }
 
-cLargeString &cLargeString::append(char c) {
-  appendLen(1);
-  *(m_string_end++) = c;
-  return *this;
-}
-
-cLargeString &cLargeString::append(int i) {
-  if (i < 0) {
-    appendLen(2);
-    *(m_string_end++) = '-';
-    i *= -1;
-  }
-  if (i < 10) return append((char)('0' + i));
-  char buf[21]; // unsigned int 64: max. 20. (18446744073709551615) signed int64: max. 19 (+ sign)
-  char *bufferEnd = buf+20;
-  *bufferEnd = 0;
-  for (; i; i /= 10) *(--bufferEnd) = '0' + (i%10);
-  return appendS(bufferEnd);
-}
-
-cLargeString &cLargeString::append(const char *s, size_t len) {
-  if (!s || len == 0) return *this;
-  appendLen(len);
-  memcpy(m_string_end, s, len);
-  m_string_end += len;
-  return *this;
-}
-
-cLargeString &cLargeString::appendS(const char *s) {
-  if (!s || !*s) return *this;
-  size_t len = strlen(s);
-  appendLen(len);
-  memcpy(m_string_end, s, len);
-  m_string_end += len;
-  return *this;
-}
 void cLargeString::enlarge(size_t increaseSize) {
   increaseSize = std::max(increaseSize, m_increaseSize);
   increaseSize = std::max(increaseSize, (size_t)((m_buffer_end - m_s)/2) );

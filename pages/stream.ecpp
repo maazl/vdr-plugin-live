@@ -22,8 +22,7 @@ using namespace vdrlive;
 </%request>
 <%include>page_init.eh</%include>
 <%cpp>
-        tChannelID channelid;
-        channelid = channelid.FromString(channelid_str.c_str());
+  tChannelID channelid = channelid.FromString(channelid_str.c_str());
 	if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 
 	pageTitle = trVDR("Stream");
@@ -39,28 +38,14 @@ using namespace vdrlive;
 		return reply.redirect("");
 	}
 
-#if VDRVERSNUM < 20301
-	ReadLock channelsLock( Channels );
-	if ( !channelsLock )
-		throw HtmlError( tr("Couldn't aquire access to channels, please try again later.") );
-#endif
-
 	if ( qparam.has("channelid_str") ) {
-#if VDRVERSNUM >= 20301
 		LOCK_CHANNELS_READ;
 		cChannel *c = (cChannel *)Channels->GetByChannelID( channelid );
-#else
-		cChannel *c = Channels.GetByChannelID( channelid );
-#endif
 		if ( c ) channel = c->Number();
 	}
 	if ( channel > 0 ) {
-#if VDRVERSNUM >= 20301
 		LOCK_CHANNELS_READ;
 		Channel = (cChannel *)Channels->GetByNumber( channel );
-#else
-		Channel = Channels.GetByNumber( channel );
-#endif
 	}
 	if ( Channel == 0 )
 		throw HtmlError( tr("Couldn't find channel or no channels available. Maybe you mistyped your request?") );
@@ -109,7 +94,7 @@ using namespace vdrlive;
 				<script>
 				Clappr.Log.setLevel(Clappr.Log.LEVEL_INFO);
 				var player = new Clappr.Player({
-					source: "media/<$ session $>/master_<$ std::to_string(channel) $>.m3u8",
+					source: "media/<$ session $>/master_<$ cSv(cToSvInt(channel)) $>.m3u8",
 					parentId: "#player",
 					width: 1280, height: 720,
 					autoPlay: "true",
@@ -124,14 +109,7 @@ using namespace vdrlive;
 dsyslog("vdrlive::stream: generating EPG info");
 const cSchedule *Schedule = NULL;
 {
-#if VDRVERSNUM >= 20301
-
 	LOCK_SCHEDULES_READ;
-#else
-	cSchedulesLock schedulesLock;
-	const cSchedules* Schedules = cSchedules::Schedules(schedulesLock);
-#endif
-
 	Schedule = Schedules->GetSchedule(Channel);
 }
 const cEvent *Event = NULL;
@@ -159,8 +137,10 @@ if (Event) {
 		timeSpan = headTime;
 		startDate = headDate;
 	}
-  std::string longDescription = StringEscapeAndBreak(StringWordTruncate(epgEvent->LongDescr(), LiveSetup().GetMaxTooltipChars()))
-	  + "<br/><br/>" + tr("Click to view details.");
+  std::string longDescription = concat(
+    StringEscapeAndBreak(StringWordTruncate(epgEvent->LongDescr(), LiveSetup().GetMaxTooltipChars())),
+	  "<br/><br/>",
+    tr("Click to view details."));
 	</%cpp>
 			<table class="listing" cellspacing="0" cellpadding="0">
 				<tr>
@@ -184,7 +164,7 @@ if (Event) {
 %							}
 						</div>
 					</td>
-					<td class="topaligned rightcol bottomrow" style="width: 250px"><div class="station withmargin"><a	href="schedule.html?channel=<$ std::to_string(channel) $>" <& tooltip.hint text=(tr("View the schedule of this channel")) &>><$ std::to_string(channel) $><$ tr(" - ") $><$ (epgEvent->Caption()) $></a></div>
+					<td class="topaligned rightcol bottomrow" style="width: 250px"><div class="station withmargin"><a	href="schedule.html?channel=<$ cSv(cToSvInt(channel)) $>" <& tooltip.hint text=(tr("View the schedule of this channel")) &>><$ cSv(cToSvInt(channel)) $><$ tr(" - ") $><$ (epgEvent->Caption()) $></a></div>
 					</td>
 				</tr>
 			</table>
@@ -198,7 +178,7 @@ if (Event) {
 <%def channel_selection>
 <form action="stream.html" method="get" id="channels">
   <span>
-    <label for="channel"><$ tr("Channel") $>:&nbsp;<span class="bold"><$ std::to_string(Channel->Number()) $></span></label>
+    <label for="channel"><$ tr("Channel") $>:&nbsp;<span class="bold"><$ cSv(cToSvInt(Channel->Number())) $></span></label>
     <& channels_widget name=("channel") selected=(Channel ? *Channel->GetChannelID().ToString() : "") onchange=("player.stop(); document.forms.channels.submit()") &>
 %   if (cDevice::PrimaryDevice() && cDevice::PrimaryDevice()->HasDecoder() ) {
       <& pageelems.ajax_action_href action="switch_channel" tip=(tr("Switch to this channel.")) param=(Channel->GetChannelID()) image="zap.png" alt="" &>

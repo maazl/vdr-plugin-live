@@ -10,23 +10,20 @@
 #include <vdr/plugin.h>
 #include <vdr/menu.h>
 #include <vdr/svdrp.h>
+#include "services.h"
+#include "setup.h"
 
 namespace vdrlive {
 
 	static char const* const TIMER_DELETE = "DELETE";
 	static char const* const TIMER_TOGGLE = "TOGGLE";
 
-	SortedTimers::SortedTimers()
-#if VDRVERSNUM < 20301
-	: m_state( 0 )
-#endif
-	{
-	}
+	SortedTimers::SortedTimers() { }
 
 	std::string SortedTimers::GetTimerId( cTimer const& timer )
 	{
 		std::stringstream builder;
-		builder << timer.Channel()->GetChannelID() << ":" << timer.WeekDays() << ":"
+		builder << cSv(cToSvChannel(timer.Channel()->GetChannelID())) << ":" << timer.WeekDays() << ":"
 				<< timer.Day() << ":" << timer.Start() << ":" << timer.Stop();
 		return builder.str();
 	}
@@ -39,27 +36,23 @@ namespace vdrlive {
 			return 0;
 		}
 
-#if VDRVERSNUM >= 20301
-	#ifdef DEBUG_LOCK
+#ifdef DEBUG_LOCK
 		dsyslog("live: timers.cpp SortedTimers::GetByTimerId() LOCK_TIMERS_READ");
 		dsyslog("live: timers.cpp SortedTimers::GetByTimerId() LOCK_CHANNELS_READ");
-	#endif
+#endif
 		LOCK_TIMERS_READ
 		LOCK_CHANNELS_READ;
 		cChannel* channel = (cChannel *)Channels->GetByChannelID( tChannelID::FromString( parts[0].c_str() ) );
-#else
-		cChannel* channel = Channels.GetByChannelID( tChannelID::FromString( parts[0].c_str() ) );
-#endif
 		if ( channel == 0 ) {
 			esyslog("live: GetByTimerId: no channel %s", parts[0].c_str() );
 			return 0;
 		}
 
 		try {
-			int weekdays = lexical_cast<int>( parts[1] );
-			time_t day = lexical_cast<time_t>( parts[2] );
-			int start = lexical_cast<int>( parts[3] );
-			int stop = lexical_cast<int>( parts[4] );
+			int weekdays = parse_int<int>( parts[1] );
+			time_t day = parse_int<time_t>( parts[2] );
+			int start = parse_int<int>( parts[3] );
+			int stop = parse_int<int>( parts[4] );
 
 			cMutexLock MutexLock(&m_mutex);
 
@@ -74,7 +67,6 @@ namespace vdrlive {
 		}
 		return 0;
 	}
-
 
 	std::string SortedTimers::EncodeDomId(std::string const& timerid)
 	{
@@ -111,52 +103,44 @@ namespace vdrlive {
 
 		if (timer.Aux())
 		{
-			std::string epgsearchinfo = GetXMLValue(timer.Aux(), "epgsearch");
+			cSv epgsearchinfo = partInXmlTag(timer.Aux(), "epgsearch");
 			if (!epgsearchinfo.empty())
 			{
-				std::string searchtimer = GetXMLValue(epgsearchinfo, "searchtimer");
+				cSv searchtimer = partInXmlTag(epgsearchinfo, "searchtimer");
 				if (!searchtimer.empty())
 					info << tr("Searchtimer") << ": " << searchtimer << std::endl;
 			}
 		}
-#if VDRVERSNUM >= 20400
-                if (timer.Local()) {
-                  info << trVDR("Record on") << ": " << trVDR(" ") << std::endl;
-                } else {
-                  info << trVDR("Record on") << ": " << timer.Remote() << std::endl;
-                }
-#endif
+    if (timer.Local()) {
+      info << trVDR("Record on") << ": " << trVDR(" ") << std::endl;
+    } else {
+      info << trVDR("Record on") << ": " << timer.Remote() << std::endl;
+    }
 		return info.str();
 	}
 
-	std::string SortedTimers::TvScraperTimerInfo(cTimer const& timer) {
+	std::string SortedTimers::TvScraperTimerInfo(cTimer const& timer, std::string &recID, std::string &recName) {
 		if (!timer.Aux()) return "";
-                std::string tvScraperInfo = GetXMLValue(timer.Aux(), "tvscraper");
-                if (tvScraperInfo.empty()) return "";
-                std::string data = GetXMLValue(tvScraperInfo, "reason");
-                if (data.empty() ) return "";
-                data.append(": ");
-                data.append(GetXMLValue(tvScraperInfo, "causedBy"));
-		return data;
+    cGetAutoTimerReason getAutoTimerReason;
+    getAutoTimerReason.timer = &timer;
+    getAutoTimerReason.requestRecording = true;
+    if (getAutoTimerReason.call(LiveSetup().GetPluginScraper()) ) {
+      if (!getAutoTimerReason.createdByTvscraper) return "";
+      if (getAutoTimerReason.recording) {
+        recID = concat("recording_", cToSvXxHash128(getAutoTimerReason.recording->FileName() ));
+        recName = std::move(getAutoTimerReason.recordingName);
+        return std::move(getAutoTimerReason.reason);
+      }
+      return concat(getAutoTimerReason.reason, " ", getAutoTimerReason.recordingName);
+    }
+// fallback information, if this tvscraper method is not available
+    cSv tvScraperInfo = partInXmlTag(timer.Aux(), "tvscraper");
+    if (tvScraperInfo.empty()) return "";
+    cSv data = partInXmlTag(tvScraperInfo, "reason");
+    if (data.empty() ) return "";
+    return concat(data, " ", partInXmlTag(tvScraperInfo, "causedBy"));
 	}
 
-	std::string SortedTimers::SearchTimerInfo(cTimer const& timer, std::string const& value)
-	{
-		std::stringstream info;
-		if (timer.Aux())
-		{
-			std::string epgsearchinfo = GetXMLValue(timer.Aux(), "epgsearch");
-			if (!epgsearchinfo.empty())
-			{
-				std::string data = GetXMLValue(epgsearchinfo, value);
-				if (!data.empty())
-					info << data;
-			}
-		}
-		return info.str();
-	}
-
-#if VDRVERSNUM >= 20301
 	bool SortedTimers::Modified()
 	{
 		bool modified = false;
@@ -169,7 +153,6 @@ namespace vdrlive {
 
 		return modified;
 	}
-#endif
 
 	TimerManager::TimerManager()
 	:	m_reloadTimers(true)
@@ -183,7 +166,7 @@ namespace vdrlive {
 
 		std::stringstream builder;
 		builder << flags << ":"
-				<< channel << ":"
+				<< cSv(cToSvChannel(channel)) << ":"
 				<< ( weekdays != "-------" ? weekdays : "" )
 				<< ( weekdays == "-------" || day.empty() ? "" : "@" ) << day << ":"
 				<< start << ":"
@@ -204,9 +187,10 @@ namespace vdrlive {
 		dsyslog("live: UpdateTimer() remote '%s'", remote);
 		dsyslog("live: UpdateTimer() oldRemote '%s'", oldRemote);
 		dsyslog("live: UpdateTimer() channel '%s'", *(channel.ToString()));
+		dsyslog("live: UpdateTimer() channel '%s'", cToSvChannel(channel).c_str() );
 		dsyslog("live: UpdateTimer() builder '%s'", builder.str().c_str());
 
-                timerStruct timerData = { .id = timerId, .remote=remote, .oldRemote=oldRemote, .builder=builder.str() };
+    timerStruct timerData = { .id = timerId, .remote=remote, .oldRemote=oldRemote, .builder=builder.str() };
 
 		// dsyslog("live: SV: in UpdateTimer");
 		m_updateTimers.push_back( timerData );
@@ -358,7 +342,7 @@ namespace vdrlive {
 				dsyslog("live: DoUptimer() update timer on remote server '%s'", timerData.remote);
 				cStringList response;
 				std::string command = "MODT ";
-				command.append(std::to_string(timerData.id));
+				command.append(cToSvInt(timerData.id));
 				command.append(" ");
 				command.append(timerData.builder);
 				dsyslog("live: DoUpdateTimer() svdrp command '%s'", command.c_str());
@@ -460,7 +444,7 @@ namespace vdrlive {
 			dsyslog("live: DoDeleteTimer() delete remote timer id '%d' from server '%s'", timerData.id, timerData.remote);
 			cStringList response;
 			std::string command = "DELT ";
-			command.append(std::to_string(timerData.id));
+			command.append(cToSvInt(timerData.id));
 			bool svdrpOK = ExecSVDRPCommand(timerData.remote, command.c_str(), &response);
 			if ( !svdrpOK ) {
 				esyslog( "live: delete remote timer id %d failed", timerData.id);
@@ -534,7 +518,7 @@ namespace vdrlive {
 			LOCK_TIMERS_READ;
 			const cTimer* toggleTimer = Timers->GetById( timerData.id, timerData.remote );
 			std::string command = "MODT ";
-			command.append(std::to_string(timerData.id));
+			command.append(cToSvInt(timerData.id));
 			if (toggleTimer->HasFlags(tfActive)) {
 				dsyslog("live: DoToggleTimer() timer is active");
 				command.append(" off");

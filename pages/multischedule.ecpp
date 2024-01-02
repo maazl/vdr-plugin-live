@@ -54,6 +54,7 @@ std::vector<time_t>			times_start;
 </%request>
 <%include>page_init.eh</%include>
 <%cpp>
+  reply.setHeader (tnt::httpheader::cacheControl, "no-store, no-cache, max-age=0, must-revalidate, proxy-revalidate", true);
 	if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
 	pageTitle = tr("MultiSchedule");
 
@@ -136,7 +137,7 @@ std::vector<time_t>			times_start;
                         thisGroup.erase( 0, channelSep+1 );
                     else
                         thisGroup = "";
-                    int channel_no = lexical_cast< int > (thisChannel);
+                    int channel_no = parse_int< int > (thisChannel);
 #if VDRVERSNUM >= 20301
                     cChannel* Channel = (cChannel *)Channels->GetByNumber( channel_no );
 #else
@@ -235,7 +236,7 @@ std::vector<time_t>			times_start;
 					continue;
 				}
 				std::string min = (*part).substr(sep+1, (*part).npos );
-				offsets.push_back( lexical_cast<time_t>( hour )*60*60 + lexical_cast<time_t>( min ) *60 );
+				offsets.push_back( parse_int<time_t>( hour )*60*60 + parse_int<time_t>( min ) *60 );
 			}
 			catch ( const bad_lexical_cast & ) {
 				esyslog("live: Error parsing time '%s'", part->c_str() );
@@ -325,7 +326,7 @@ std::vector<time_t>			times_start;
 	time_t sched_start = (times_start[ time_para ]/300)*300;
 	time_t max_hours;
 	try {
-		max_hours = lexical_cast<time_t>( LiveSetup().GetScheduleDuration() );
+		max_hours = parse_int<time_t>( LiveSetup().GetScheduleDuration() );
 	}
 	catch ( const bad_lexical_cast & )
 	{
@@ -349,14 +350,10 @@ std::vector<time_t>			times_start;
 		int chan = channel_groups_numbers[ channel ][ j ];
 
 		cChannel* Channel;
-#if VDRVERSNUM >= 20301
 		{
 			LOCK_CHANNELS_READ;
 			Channel = (cChannel *)Channels->GetByNumber( chan );
 		}
-#else
-		Channel = Channels.GetByNumber( chan );
-#endif
 		if ( ! Channel )
 			continue;
 		if ( Channel->GroupSep() || !Channel->Name() || !*Channel->Name() )
@@ -365,14 +362,10 @@ std::vector<time_t>			times_start;
 		channel_IDs[ j ] = Channel->GetChannelID();
 
 		cSchedule const* Schedule;
-#if VDRVERSNUM >= 20301
 		{
 			LOCK_SCHEDULES_READ;
 			Schedule = Schedules->GetSchedule( Channel );
 		}
-#else
-		Schedule = schedules->GetSchedule( Channel );
-#endif
 		if ( ! Schedule )
 		{
 			// insert dummy event for the entire channel if no EPG data
@@ -559,7 +552,7 @@ std::vector<time_t>			times_start;
 <%cpp>
                            if (LiveFeatures<features::epgsearch>().Recent() ) {
 </%cpp>
-                          <a href="searchresults.html?searchplain=<$ StringUrlEncode(en.title) $>"><img src="<$ LiveSetup().GetThemedLink("img", "search.png") $>" alt="" <& tooltip.hint text=(tr("Search for repeats.")) &>></img></a>
+                          <a href="searchresults.html?searchplain=<$ StringUrlEncode(en.title) $>"><img src="<$ LiveSetup().GetThemedLink("img", "search.png") $>" alt="" <& tooltip.hint text=(tr("Search for repeats.")) &> /></a>
 <%cpp>
                            } else {
                              </%cpp><img src="img/transparent.png" width="16" height="16"><%cpp>

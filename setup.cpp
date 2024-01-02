@@ -39,7 +39,6 @@ Setup::Setup():
 		m_lastsortingmode("nameasc"),
 		m_tntnetloglevel("WARN"),
 		m_showLogo(1),
-		m_useAjax(1),
 		m_showInfoBox(1),
 		m_useStreamdev(1),
 		m_streamdevPort(3000),
@@ -60,6 +59,7 @@ Setup::Setup():
 {
 	m_adminPasswordMD5 = "4:" + MD5Hash("live");
 	liveplugin = cPluginManager::GetPlugin("live");
+  m_vdr_start = time(0);
 }
 
 bool Setup::ParseCommandLine( int argc, char* argv[] )
@@ -74,6 +74,7 @@ bool Setup::ParseCommandLine( int argc, char* argv[] )
 			{ "sslport", required_argument, NULL, 's' },
 			{ "cert", required_argument, NULL, 'c' },
 			{ "key", required_argument, NULL, 'k' },
+			{ "chanlogos",  required_argument, NULL, '1' },
 			{ 0 }
 	};
 
@@ -92,12 +93,15 @@ bool Setup::ParseCommandLine( int argc, char* argv[] )
 		case 's': m_serverSslPort = atoi( optarg ); break;
 		case 'c': m_serverSslCert = optarg; break;
 		case 'k': m_serverSslKey = optarg; break;
+		case '1': m_chanlogodir = optarg;
+			if(!m_chanlogodir.empty() && m_chanlogodir[m_chanlogodir.length()-1] != '/') m_chanlogodir += "/";
+			break;
 		default:  return false;
 		}
 	}
   if (!m_serverUrl.empty() ) {
     m_serverUrlImages = m_serverUrl + ":";
-    m_serverUrlImages += std::to_string(m_serverPort);
+    m_serverUrlImages += cSv(cToSvInt(m_serverPort));
     m_serverUrlImages += "/tvscraper/";
   } else m_serverUrlImages = "";
 
@@ -133,7 +137,8 @@ char const* Setup::CommandLineHelp() const
 				<< "  -k KEY,  --key=KEY           full path to a custom ssl certificate key file\n"
 				<< "  -l level, --log=level        log level for tntnet (values: WARN, ERROR, INFO, DEBUG, TRACE)\n"
 				<< "  -e <dir>, --epgimages=<dir>  directory for epgimages\n"
-				<< "  -t <dir>, --tvscraperimages=<dir> directory for tvscraper images\n";
+				<< "  -t <dir>, --tvscraperimages=<dir> directory for tvscraper images\n"
+				<< "            --chanlogos=<dir>  directory for channel logos (PNG)\n";
 		m_helpString = builder.str();
 	}
 	return m_helpString.c_str();
@@ -155,7 +160,6 @@ bool Setup::ParseSetupEntry( char const* name, char const* value )
 	else if ( strcmp( name, "LastWhatsOnListMode" ) == 0 ) { m_lastwhatsonlistmode = value; }
 	else if ( strcmp( name, "LastSortingMode" ) == 0 ) { m_lastsortingmode = value; }
 	else if ( strcmp( name, "ShowLogo" ) == 0 ) { m_showLogo = atoi(value); }
-	else if ( strcmp( name, "UseAjax" ) == 0 ) { m_useAjax = atoi(value); }
 	else if ( strcmp( name, "ShowInfoBox" ) == 0 ) { m_showInfoBox = atoi(value); }
 	else if ( strcmp( name, "UseStreamdev" ) == 0 ) { m_useStreamdev = atoi(value); }
 	else if ( strcmp( name, "StreamdevPort" ) == 0 ) { m_streamdevPort = atoi(value); }
@@ -261,7 +265,7 @@ int Setup::GetAdminPasswordLength() const
 {
 	// format is <length>:<md5-hash of password>
 	std::vector<std::string> parts = StringSplit( m_adminPasswordMD5, ':' );
-	return (parts.size() > 0) ? lexical_cast<int>( parts[0] ) : 0;
+	return (parts.size() > 0) ? parse_int<int>( parts[0] ) : 0;
 }
 
 std::string Setup::SetAdminPassword(std::string password)
@@ -309,7 +313,7 @@ bool Setup::CheckLocalNet(const std::string& ip)
 	if (parts.size() != 2) return false;
 	std::string net = parts[0];
 
-	int range = lexical_cast<int>(parts[1]);
+	int range = parse_int<int>(parts[1]);
 	// split net and ip addr in its 4 subcomponents
 	std::vector<std::string> netparts = StringSplit( net, '.' );
 	std::vector<std::string> addrparts = StringSplit( ip, '.' );
@@ -317,16 +321,16 @@ bool Setup::CheckLocalNet(const std::string& ip)
 
 	// to binary representation
 	std::stringstream bin_netstream;
-	bin_netstream << std::bitset<8>(lexical_cast<long>(netparts[0]))
-		<< std::bitset<8>(lexical_cast<long>(netparts[1]))
-		<< std::bitset<8>(lexical_cast<long>(netparts[2]))
-		<< std::bitset<8>(lexical_cast<long>(netparts[3]));
+	bin_netstream << std::bitset<8>(parse_int<long>(netparts[0]))
+		<< std::bitset<8>(parse_int<long>(netparts[1]))
+		<< std::bitset<8>(parse_int<long>(netparts[2]))
+		<< std::bitset<8>(parse_int<long>(netparts[3]));
 
 	std::stringstream bin_addrstream;
-	bin_addrstream << std::bitset<8>(lexical_cast<long>(addrparts[0]))
-		<< std::bitset<8>(lexical_cast<long>(addrparts[1]))
-		<< std::bitset<8>(lexical_cast<long>(addrparts[2]))
-		<< std::bitset<8>(lexical_cast<long>(addrparts[3]));
+	bin_addrstream << std::bitset<8>(parse_int<long>(addrparts[0]))
+		<< std::bitset<8>(parse_int<long>(addrparts[1]))
+		<< std::bitset<8>(parse_int<long>(addrparts[2]))
+		<< std::bitset<8>(parse_int<long>(addrparts[3]));
 
 	// compare range
 	std::string bin_net = bin_netstream.str();
@@ -357,7 +361,6 @@ bool Setup::SaveSetup()
 	liveplugin->SetupStore("LastWhatsOnListMode", m_lastwhatsonlistmode.c_str());
 	liveplugin->SetupStore("LastSortingMode", m_lastsortingmode.c_str());
 	liveplugin->SetupStore("ShowLogo", m_showLogo);
-	liveplugin->SetupStore("UseAjax", m_useAjax);
 	liveplugin->SetupStore("ShowInfoBox", m_showInfoBox);
 	liveplugin->SetupStore("UseStreamdev", m_useStreamdev);
 	liveplugin->SetupStore("StreamdevPort", m_streamdevPort);
