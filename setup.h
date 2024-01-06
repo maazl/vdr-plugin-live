@@ -11,8 +11,8 @@
 
 #include <vdr/menuitems.h>
 
-#define LIVEVERSION "3.3.3"
-#define LIVEVERSNUM 30303
+#define LIVEVERSION "3.3.4"
+#define LIVEVERSNUM 30304
 #define LIVESUMMARY trNOOP("Live Interactive VDR Environment")
 
 namespace vdrlive {
@@ -60,7 +60,6 @@ class Setup
 		std::string const GetLastSortingMode() const { return m_lastsortingmode; }
 		std::string const GetTntnetLogLevel() const { return m_tntnetloglevel; }
 		bool GetShowLogo() const { return m_showLogo != 0; }
-		bool GetUseAjax() const { return true; }
 		bool GetUseArchive() const { return false; }
 		bool GetShowInfoBox() const { return m_showInfoBox != 0; }
 		bool GetUseStreamdev() const { return m_useStreamdev != 0; }
