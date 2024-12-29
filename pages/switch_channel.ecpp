@@ -1,6 +1,7 @@
 <%pre>
 
 #include <exception.h>
+#include <setup.h>
 #include <tasks.h>
 #include <tools.h>
 #include <users.h>
@@ -9,42 +10,59 @@ using namespace vdrlive;
 
 </%pre>
 <%args>
-	std::string param;
-	std::string async;
+  int channel_number = 0;
+  std::string param;
+  std::string async;
 </%args>
+<%session scope="global">
+bool logged_in(false);
+</%session>
 <%cpp>
-	tChannelID paramID = tChannelID::FromString(param.c_str());
-	bool ajaxReq = !async.empty() && (parse_int<int>(async) != 0);
-	std::string referrer;
+  if (!logged_in && LiveSetup().UseAuth()) {
+    cToSvConcat targetUrl = "/login.html?redirect=";
+    targetUrl.appendUrlEscaped(request.getQuery());
+    return reply.redirect(targetUrl.data());
+  }
+  tChannelID channelID;
+  if (qparam.has("channel_number") && channel_number > 0) {
+    LOCK_CHANNELS_READ;
+    const cChannel* channel = Channels->GetByNumber(channel_number);
+    channelID = channel ? channel->GetChannelID() : tChannelID::InvalidID;
+  } else
+    channelID = tChannelID::FromString(param.c_str());
 
-	if (!cUser::CurrentUserHasRightTo(UR_SWITCHCHNL))
-		throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
+  bool ajaxReq = !async.empty() && (parse_int<int>(async) != 0);
+  std::string referrer;
 
-	if (ajaxReq) {
-		reply.setContentType( "application/xml" );
-	}
-	else {
-		referrer = request.getHeader("Referer:");
-	}
+  if (!cUser::CurrentUserHasRightTo(UR_SWITCHCHNL))
+    throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
 
-	SwitchChannelTask task( paramID );
-	LiveTaskManager().Execute( task );
+  if (ajaxReq) {
+    reply.setContentType( "application/xml" );
+  }
+  else {
+    referrer = request.getHeader("Referer:");
+  }
 
-	if (!ajaxReq) {
-		if (!referrer.empty()) {
-			return reply.redirect(referrer);
-		}
+  SwitchChannelTask task( channelID );
+  LiveTaskManager().Execute( task );
+
+  if (!ajaxReq) {
+    if (!referrer.empty() && referrer.find("login") == std::string::npos) {
+      return reply.redirect(referrer);
+    }
 </%cpp>
-Normale Seite:<br/>
-channel: <$ paramID $><br/>
-result: <$ (task.Result()) $><br/>
-error: <$ (task.Error()) $><br />
-Seitenende!
+<b>Switch-Channel Request</b>
+<hr/>
+Channel: <$ channelID $><? qparam.has("channel_number") ? " [" + std::to_string(channel_number) + "]" ?><br/>
+Result:  <$ task.Result() $><br/>
+Error:   <$ !task.Error().empty() ? task.Error() : "—" $>
+<hr/>
 <%cpp>
-	}
-	else {
+  }
+  else {
 </%cpp>
-<& xmlresponse.ajax name=("switch_channel") pname=("channel") value=(paramID) result=(task.Result()) error=(task.Error()) &>
+<& xmlresponse.ajax name=("switch_channel") pname=("channel") value=(channelID) result=(task.Result()) error=(task.Error()) &>
 <%cpp>
-	}
+  }
 </%cpp>

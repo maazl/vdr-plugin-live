@@ -43,7 +43,7 @@ msgstr "ადმინისტრატორის პაროლი"
 msgid "%A, %x"
 msgstr "%A, %x"
 
-msgid "Searchtimer"
+msgid "Search timer"
 msgstr "ძებნისტაიმერი"
 
 msgid "Error in timer settings"
@@ -141,6 +141,9 @@ msgstr "არხს განრიგი არ გააჩნია"
 msgid "Wrong event id"
 msgstr "მოვლენის არასწორი ID"
 
+msgid "%A, %b %d %Y"
+msgstr "%A, %b %d %Y"
+
 msgid "Required minimum version of epgsearch: "
 msgstr "EPGSearch-ის აუცილებელი მინიმალურ ვერსია: "
 
@@ -153,7 +156,7 @@ msgstr "FTA"
 msgid "EPGSearch version outdated! Please update."
 msgstr "EPGSearch-ის ვერსია მოძველებულია! გთხოვთ, განაახლოთ."
 
-msgid "Couldn't aquire primary device"
+msgid "Couldn't acquire primary device"
 msgstr "ძირითადი მოწყობილობის მიღების შეცდომა"
 
 msgid "Couldn't grab image from primary device"
@@ -168,60 +171,362 @@ msgstr "კონფლიქტი"
 msgid "conflicts"
 msgstr "კონფლიქტები"
 
-msgid "Electronic program guide information"
-msgstr "ელექტრონული პროგრამის გიდის ინფორმაცია"
-
 msgid "Couldn't find recording or no recordings available"
 msgstr "ჩანაწერები ვერ ვიპოვე"
 
-msgid "Error aquiring schedules lock"
-msgstr "განრიგის ბლოკის მიღების შეცდომა"
+msgid "Sorry, no permission. Please contact your administrator!"
+msgstr "წვდომები არ გაგაჩნიათ. დაკავშირდით თქვენს ადმინისტრატორს!"
 
-msgid "Error aquiring schedules"
-msgstr "განრიგის მიღების შეცდომა"
+msgid "Couldn't find recording. Maybe you mistyped your request?"
+msgstr "ჩანაწერი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
 
-msgid "Couldn't aquire access to channels, please try again later."
-msgstr "არხებთან წვდომის შეცდომა. მოგვიანებით სცადეთ."
+msgid "Please set a name for the recording!"
+msgstr "ჩანაწერის სახელის მითითება აუცილებელია!"
 
-msgid "Couldn't find channel or no channels available. Maybe you mistyped your request?"
-msgstr "არხი ვერ ვიპოვე ან არხები მიუწვდომელია. შეიძლება, თქვენი მოთხოვნა არასწორია?"
+msgid "Cannot copy, rename or move the recording."
+msgstr "ჩანაწერის კოპირება, სახელის გადარქმევა და გადატანა შეუძლებელია."
 
-#, c-format
-msgid "%a, %x"
-msgstr "%a, %x"
+msgid "Edit recording"
+msgstr "ჩანაწერის ჩასწორება"
 
-msgid "Click to view details."
-msgstr "დეტალების სანახავად დააწკაპუნეთ."
+msgid "Name"
+msgstr "სახელი"
 
-msgid "View the schedule of this channel"
-msgstr "ამ არხის განრგის ნახვა"
+msgid "Directory"
+msgstr "საქაღალდე"
 
-msgid " - "
-msgstr " - "
+msgid "Create new directory"
+msgstr ""
 
-msgid "Channel"
-msgstr "რხი"
+msgid "Delete resume information"
+msgstr "გაგრძელების ინფორმაციის წაშლა"
 
-msgid "Switch to this channel."
-msgstr "ამ არხზე გადართვა."
+msgid "Delete marks information"
+msgstr "ნიშნების ინფორმაციის წაშლა"
 
-msgid "Wrong username or password"
-msgstr "მომხმარებლის სახელი ან პაროლი არასწორია"
+msgid "Copy only"
+msgstr "მხოლოდ კოპირება"
 
-msgid "Login"
-msgstr "შესვლა"
+msgid "Title"
+msgstr "სათაური"
 
-msgid "VDR Live Login"
-msgstr "VDR -ზე შესვლა"
+msgid "Short description"
+msgstr "მოკლე აღწერა"
 
-msgid "User"
-msgstr "მომხმარებელი"
+msgid "Description"
+msgstr "აღწერა"
+
+msgid "Auxiliary info"
+msgstr "დამატებითი ინფორმაცია"
+
+msgid "Save"
+msgstr "შენახვა"
+
+msgid "Cancel"
+msgstr "გაუქმება"
+
+msgid "Couldn't find search timer. Maybe you mistyped your request?"
+msgstr "ძებნისტამერი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
+
+msgid "Edit search timer"
+msgstr "ძებნის ტაიმერის ჩასწორება"
+
+msgid "New search timer"
+msgstr "ახალი ძებნის ტაიმერი"
+
+msgid "Search text too short - use anyway?"
+msgstr "მოსაძებნი ტექსტი ძალიან მოკლეა - გამოვიყენო მანც?"
+
+msgid "Search term"
+msgstr "ძებნის პირობა"
+
+msgid "Search mode"
+msgstr "ძებნის რეჟიმი"
+
+msgid "phrase"
+msgstr "ფრაზა"
+
+msgid "all words"
+msgstr "ყველა სიტყვა"
+
+msgid "at least one word"
+msgstr "ერთი სიტყვა მაინც"
+
+msgid "match exactly"
+msgstr "ზუსტი დამთხვევა"
+
+msgid "regular expression"
+msgstr "რეგულარული გამოსახულება"
+
+msgid "fuzzy"
+msgstr "გადღაბნილი"
+
+msgid "Tolerance"
+msgstr "დაშვება"
+
+msgid "Match case"
+msgstr "დიდი და პატარა ასოების სხვაობა"
+
+msgid "Search in"
+msgstr "სად ვეძებო"
+
+msgid "Episode"
+msgstr "ეპიზოდი"
+
+msgid "Use extended EPG info"
+msgstr "EPG-ის გაფართოების ინფორმაციის გამოყენება"
+
+msgid "Ignore missing EPG info"
+msgstr "EPG-ის ნაკლული ინფორმაციის იგნორი"
+
+msgid "When active this can cause very many timers. So please always first test this search before using it as search timer!"
+msgstr "როცა ჩართულია, შეიძლება ზედმეტი ტაიმერები დაამატოს. ჩართვამდე ყოველთვის შეამოწმეთ ეს ძებნა!"
+
+msgid "Use channel"
+msgstr "არხის გამოყენება"
+
+msgid "interval"
+msgstr "ინტერვალი"
+
+msgid "channel group"
+msgstr "არხების ჯგუფი"
+
+msgid "only FTA"
+msgstr "მხოლოდ FTA"
+
+msgid "from channel"
+msgstr "არხიდან"
+
+msgid "to channel"
+msgstr "არხამდე"
+
+msgid "Use time"
+msgstr "დროის გამოყენება"
+
+msgid "Start after"
+msgstr "დაწყება"
+
+msgid "The time the show may start at the earliest"
+msgstr "პროგრამის დაწყების უადრესი დრო"
+
+msgid "Start before"
+msgstr "მითითებულ დრომდე გასვება"
+
+msgid "The time the show may start at the latest"
+msgstr "პროგრამის დაწყების უგვიანესი დრო"
+
+msgid "Use duration"
+msgstr "ხანგრძლივობის გამოყენება"
+
+msgid "Min. duration"
+msgstr "მინ. ხანგრძლივობა"
+
+msgid "Max. duration"
+msgstr "მაქს. ხანგრძლივობა"
+
+msgid "Use day of week"
+msgstr "კვირის დღის გამოყენება"
+
+msgid "Monday"
+msgstr "ორშაბათი"
+
+msgid "Tuesday"
+msgstr "სამშაბათი"
+
+msgid "Wednesday"
+msgstr "ოთხშაბათი"
+
+msgid "Thursday"
+msgstr "ხუთშაბათი"
+
+msgid "Friday"
+msgstr "პარასკევი"
+
+msgid "Saturday"
+msgstr "შაბათი"
+
+msgid "Sunday"
+msgstr "კვირა"
+
+msgid "Use blacklists"
+msgstr "შავი სიის გამოყენება"
+
+msgid "Selection"
+msgstr "მონიშვნა"
+
+msgid "all"
+msgstr "ყველა"
+
+msgid "Use in favorites menu"
+msgstr "სანიშნების მენიუში გამოყენება"
+
+msgid "Use as search timer"
+msgstr "ძებნის ტაიმერად გამოყენება"
+
+msgid "user defined"
+msgstr "მომხმარებლის მიერ განსაზღვრული"
+
+msgid "from date"
+msgstr "თარიღიდან"
+
+msgid "to date"
+msgstr "თარიღამდე"
+
+msgid "Record"
+msgstr "ჩაწერა"
+
+msgid "Announce only"
+msgstr "მხოლოდ გამოცხადება"
+
+msgid "Switch only"
+msgstr "მხოლოდ გადართვა"
+
+msgid "Announce and Switch"
+msgstr "გამოცხადება და გადართვა"
+
+msgid "Announce via email"
+msgstr "ელფოსტით გამოცხადება"
+
+msgid "Inactive Record"
+msgstr "არააქტიური ჩანაწერი"
+
+msgid "Series recording"
+msgstr "სერიების ჩანაწერი"
+
+msgid "Delete recordings after ... days"
+msgstr "ჩანაწერების წაშლა ... დღის შემდეგ"
+
+msgid "Keep ... recordings"
+msgstr "ჩანაწერის შენახვა ... დღე"
+
+msgid "Pause when ... recordings exist"
+msgstr "შეჩერება, როცა ... ჩანაწერი არსებობს"
+
+msgid "Avoid repeats"
+msgstr "გამეორებების თავიდან აცილება"
+
+msgid "Allowed repeats"
+msgstr "გამეორებების დაშვება"
+
+msgid "Only repeats within ... days"
+msgstr "მხოლოდ ... დღეში ერთხელ მეორდება"
+
+msgid "Compare title"
+msgstr "სათაურის შედარება"
+
+msgid "Compare subtitle"
+msgstr "სუბტიტრების შედარება"
+
+msgid "if present"
+msgstr "თუ არსებობს"
+
+msgid "Compare summary"
+msgstr "მაინც შედარება"
+
+msgid "Compare"
+msgstr "შედარება"
+
+msgid "Use VPS"
+msgstr "VPS-ის გამოყენება"
+
+msgid "Auto-delete search timer"
+msgstr "ძებნის ტაიმერის ავტომატური წაშლა"
+
+msgid "after ... recordings"
+msgstr "... ჩანაწერის შემდეგ"
+
+msgid "after ... days after first rec."
+msgstr "პირველი ჩანაწერიდან ... დღეში."
+
+msgid "Switch ... minutes before start"
+msgstr "დაწყებამდე ... წუთით ადრე გადართვა"
+
+msgid "Test"
+msgstr "შემოწმება"
+
+msgid "Couldn't find timer. Maybe you mistyped your request?"
+msgstr "ტაიმერი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
+
+msgid "Please set a title for the timer!"
+msgstr "ტაიმერის სახელის მითითება აუცილებელია!"
+
+msgid "New timer"
+msgstr "ახალი ტაიმერი"
+
+msgid "Edit timer"
+msgstr "ტაიმერის ჩასწორება"
+
+msgid "Server"
+msgstr "სერვერი"
+
+msgid "Weekday"
+msgstr "კვირის დღე"
+
+msgid "Monitoring"
+msgstr ""
+
+msgid "none"
+msgstr ""
+
+msgid "event ID"
+msgstr ""
+
+msgid "event time"
+msgstr ""
+
+msgid "Couldn't find user. Maybe you mistyped your request?"
+msgstr "მომხმარებელი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
+
+msgid "This user name is already in use!"
+msgstr "ეს მომხმარებლის სახელი უკვე გამოიყენება!"
+
+msgid "Edit user"
+msgstr "მომხმარებლის ჩასწორება"
+
+msgid "New user"
+msgstr "Ახალი მომხმარებელი"
 
 msgid "Password"
 msgstr "პაროლი"
 
-msgid "Sorry, no permission. Please contact your administrator!"
-msgstr "წვდომები არ გაგაჩნიათ. დაკავშირდით თქვენს ადმინისტრატორს!"
+msgid "User rights"
+msgstr "მომხმარებლის უფლებები"
+
+msgid "Edit setup"
+msgstr "პარამეტრების ჩასწორება"
+
+msgid "Add or edit timers"
+msgstr "ტაიმერების დამატება და ჩასწორება"
+
+msgid "Delete timers"
+msgstr "ტაიმერების წაშლა"
+
+msgid "Delete recordings"
+msgstr "ჩანაწერების წაშლა"
+
+msgid "Use remote menu"
+msgstr "დაშორებული მართვა"
+
+msgid "Start replay"
+msgstr "დაკვრის დაწყება"
+
+msgid "Switch channel"
+msgstr "არხის გადართვა"
+
+msgid "Add or edit search timers"
+msgstr "ტაიმერების დამატება და ჩასწორება"
+
+msgid "Delete search timers"
+msgstr "ძებნის ტაიმერების წაშლა"
+
+msgid "Edit recordings"
+msgstr "ჩანაწერების წაშლა"
+
+msgid "Electronic program guide information"
+msgstr "ელექტრონული პროგრამის გიდის ინფორმაცია"
+
+msgid "Page error"
+msgstr "გვერდის შეცდომა"
 
 msgid "playing recording"
 msgstr "ჩანაწერის დაკვრა"
@@ -253,11 +558,11 @@ msgstr "ჩანაწერის ხანგრძლივობა"
 msgid "h"
 msgstr ""
 
+msgid "Number of ts files"
+msgstr ""
+
 msgid "Find more at the Internet Movie Database."
 msgstr "მეტის პოვნა IMDB-ზე."
-
-msgid "Edit timer"
-msgstr "ტაიმერის ჩასწორება"
 
 msgid "Record this"
 msgstr "ამის ჩაწერა"
@@ -268,6 +573,93 @@ msgstr "გამეორებების ძებნა."
 msgid "Existing Recording:"
 msgstr "არსებული ჩანაწერი:"
 
+msgid "Stream this recording into browser."
+msgstr ""
+
+msgid "Click to view details."
+msgstr "დეტალების სანახავად დააწკაპუნეთ."
+
+msgid "play this recording"
+msgstr "ამ ჩანაწერის დაკვრა"
+
+msgid "Delete this recording from hard disc!"
+msgstr "ამ ჩანაწერის დისკიდან წაშლა!"
+
+msgid "Wrong username or password"
+msgstr "მომხმარებლის სახელი ან პაროლი არასწორია"
+
+msgid "Login"
+msgstr "შესვლა"
+
+msgid "VDR Live Login"
+msgstr "VDR -ზე შესვლა"
+
+msgid "User"
+msgstr "მომხმარებელი"
+
+msgid "What's on?"
+msgstr "რა არის ჩართული?"
+
+msgid "MultiSchedule"
+msgstr "მრავალი განრიგი"
+
+msgid "Search"
+msgstr "ძებნა"
+
+msgid "Search timers"
+msgstr "ძებნისტაიმერები"
+
+msgid "Recordings"
+msgstr "ჩანაწერები"
+
+msgid "Recordings (flat)"
+msgstr "ჩანაწერები (მიყოლებით)"
+
+msgid "Remote Control"
+msgstr "დაშორებული მართვა"
+
+msgid "Web-Streaming"
+msgstr "ვებ-ნაკადი"
+
+msgid "Logout"
+msgstr "გასვლა"
+
+msgid "Your attention is required"
+msgstr "საჭიროებს თქვენს ყურადღებას"
+
+msgid "React"
+msgstr "რეაქცია"
+
+msgid "Dismiss"
+msgstr "მოსილება"
+
+msgid "All channels"
+msgstr ""
+
+msgid "First (unnamed) group"
+msgstr ""
+
+msgid "Now"
+msgstr "ახლა"
+
+msgid "Time"
+msgstr "დრო"
+
+msgid "Switch to this channel."
+msgstr "ამ არხზე გადართვა."
+
+msgid "more"
+msgstr "მეტი"
+
+msgid "Channel"
+msgstr "რხი"
+
+msgid "Prev. entry"
+msgstr ""
+
+msgid "Next entry"
+msgstr ""
+
 msgid "Stream this channel into browser."
 msgstr "ამ არხის ბრაუზერში ჩვენება."
 
@@ -277,10 +669,13 @@ msgstr "ამ არხის მედიის დამკვრელში
 msgid "Stream this recording into media player."
 msgstr "ამ ჩანაწერის მედიის დამკვრელში ჩვენება."
 
+msgid "Stream this recording."
+msgstr ""
+
 msgid "loading data"
 msgstr "მონაცემების ჩატვირთვა"
 
-msgid "an error occured!"
+msgid "an error occurred!"
 msgstr "აღმოჩენილია შეცდომა!"
 
 msgid "Request succeeded!"
@@ -409,6 +804,12 @@ msgstr "მდგომარეობა:"
 msgid "Cast and crew"
 msgstr "როლები და გადამღები ჯგუფი"
 
+msgid "Content"
+msgstr "შემცველობა"
+
+msgid "Parental rating"
+msgstr ""
+
 msgid "Authors"
 msgstr "ავტორები"
 
@@ -426,9 +827,6 @@ msgstr "წინა ხელმძღვანელი"
 
 msgid "Project leader"
 msgstr "პროექტის ლიდერი"
-
-msgid "Content"
-msgstr "შემცველობა"
 
 msgid "Graphics"
 msgstr "გრაფიკა"
@@ -460,515 +858,11 @@ msgstr "შეცდომები და რჩევები"
 msgid "If you encounter any bugs or would like to suggest new features, please use our bugtracker"
 msgstr "თუ შეცდომას პოვით, ან გნებავთ, ახალი ფუნქციონალი შემოგვთავაზოთ, მოგვწერეთ bugtracker-ზე"
 
-msgid "Search results"
-msgstr "ძებნს შედეგები"
-
-msgid "No search results"
-msgstr "ძებნის შედეგების გარეშე"
-
-msgid "%A, %b %d %Y"
-msgstr "%A, %b %d %Y"
-
-msgid "New search timer"
-msgstr "ახალი ძებნის ტაიმერი"
-
-msgid "Couldn't find timer. Maybe you mistyped your request?"
-msgstr "ტაიმერი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
-
-msgid "Please set a title for the timer!"
-msgstr "ტაიმერის სახელის მითითება აუცილებელია!"
-
-msgid "New timer"
-msgstr "ახალი ტაიმერი"
-
-msgid "Title"
-msgstr "სათაური"
-
-msgid "Server"
-msgstr "სერვერი"
-
-msgid "Directory"
-msgstr "საქაღალდე"
-
-msgid "Weekday"
-msgstr "კვირის დღე"
-
-msgid "Monday"
-msgstr "ორშაბათი"
-
-msgid "Tuesday"
-msgstr "სამშაბათი"
-
-msgid "Wednesday"
-msgstr "ოთხშაბათი"
-
-msgid "Thursday"
-msgstr "ხუთშაბათი"
-
-msgid "Friday"
-msgstr "პარასკევი"
-
-msgid "Saturday"
-msgstr "შაბათი"
-
-msgid "Sunday"
-msgstr "კვირა"
-
-msgid "Use VPS"
-msgstr "VPS-ის გამოყენება"
-
-msgid "Save"
-msgstr "შენახვა"
-
-msgid "Cancel"
-msgstr "გაუქმება"
-
-msgid "MultiSchedule"
-msgstr "მრავალი განრიგი"
-
-msgid "Now"
-msgstr "ახლა"
-
-msgid "Time"
-msgstr "დრო"
-
-msgid "more"
-msgstr "მეტი"
-
-msgid "What's on?"
-msgstr "რა არის ჩართული?"
-
-msgid "Search"
-msgstr "ძებნა"
-
-msgid "Searchtimers"
-msgstr "ძებნისტაიმერები"
-
-msgid "Recordings"
-msgstr "ჩანაწერები"
-
-msgid "Recordings (flat)"
-msgstr "ჩანაწერები (მიყოლებით)"
-
-msgid "Remote Control"
-msgstr "დაშორებული მართვა"
-
-msgid "Web-Streaming"
-msgstr "ვებ-ნაკადი"
-
-msgid "Logout"
-msgstr "გასვლა"
-
-msgid "Your attention is required"
-msgstr "საჭიროებს თქვენს ყურადღებას"
-
-msgid "React"
-msgstr "რეაქცია"
-
-msgid "Dismiss"
-msgstr "მოსილება"
-
-msgid "No schedules available for this channel"
-msgstr "ამ არხისთვის გეგმა ხელმიუწვდომელია"
-
-msgid "Couldn't find searchtimer. Maybe you mistyped your request?"
-msgstr "ძებნისტამერი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
-
-msgid "Edit search timer"
-msgstr "ძებნის ტაიმერის ჩასწორება"
-
-msgid "Search text too short - use anyway?"
-msgstr "მოსაძებნი ტექსტი ძალიან მოკლეა - გამოვიყენო მანც?"
-
-msgid "Search term"
-msgstr "ძებნის პირობა"
-
-msgid "Search mode"
-msgstr "ძებნის რეჟიმი"
-
-msgid "phrase"
-msgstr "ფრაზა"
-
-msgid "all words"
-msgstr "ყველა სიტყვა"
-
-msgid "at least one word"
-msgstr "ერთი სიტყვა მაინც"
-
-msgid "match exactly"
-msgstr "ზუსტი დამთხვევა"
-
-msgid "regular expression"
-msgstr "რეგულარული გამოსახულება"
-
-msgid "fuzzy"
-msgstr "გადღაბნილი"
-
-msgid "Tolerance"
-msgstr "დაშვება"
-
-msgid "Match case"
-msgstr "დიდი და პატარა ასოების სხვაობა"
-
-msgid "Search in"
-msgstr "სად ვეძებო"
-
-msgid "Episode"
-msgstr "ეპიზოდი"
-
-msgid "Description"
-msgstr "აღწერა"
-
-msgid "Use extended EPG info"
-msgstr "EPG-ის გაფართოების ინფორმაციის გამოყენება"
-
-msgid "Ignore missing EPG info"
-msgstr "EPG-ის ნაკლული ინფორმაციის იგნორი"
-
-msgid "When active this can cause very many timers. So please always first test this search before using it as search timer!"
-msgstr "როცა ჩართულია, შეიძლება ზედმეტი ტაიმერები დაამატოს. ჩართვამდე ყოველთვის შეამოწმეთ ეს ძებნა!"
-
-msgid "Use channel"
-msgstr "არხის გამოყენება"
-
-msgid "interval"
-msgstr "ინტერვალი"
-
-msgid "channel group"
-msgstr "არხების ჯგუფი"
-
-msgid "only FTA"
-msgstr "მხოლოდ FTA"
-
-msgid "from channel"
-msgstr "არხიდან"
-
-msgid "to channel"
-msgstr "არხამდე"
-
-msgid "Use time"
-msgstr "დროის გამოყენება"
-
-msgid "Start after"
-msgstr "დაწყება"
-
-msgid "The time the show may start at the earliest"
-msgstr "პროგრამის დაწყების უადრესი დრო"
-
-msgid "Start before"
-msgstr "მითითებულ დრომდე გასვება"
-
-msgid "The time the show may start at the latest"
-msgstr "პროგრამის დაწყების უგვიანესი დრო"
-
-msgid "Use duration"
-msgstr "ხანგრძლივობის გამოყენება"
-
-msgid "Min. duration"
-msgstr "მინ. ხანგრძლივობა"
-
-msgid "Max. duration"
-msgstr "მაქს. ხანგრძლივობა"
-
-msgid "Use day of week"
-msgstr "კვირის დღის გამოყენება"
-
-msgid "Use blacklists"
-msgstr "შავი სიის გამოყენება"
-
-msgid "Selection"
-msgstr "მონიშვნა"
-
-msgid "all"
-msgstr "ყველა"
-
-msgid "Use in favorites menu"
-msgstr "სანიშნების მენიუში გამოყენება"
-
-msgid "Use as search timer"
-msgstr "ძებნის ტაიმერად გამოყენება"
-
-msgid "user defined"
-msgstr "მომხმარებლის მიერ განსაზღვრული"
-
-msgid "from date"
-msgstr "თარიღიდან"
-
-msgid "to date"
-msgstr "თარიღამდე"
-
-msgid "Record"
-msgstr "ჩაწერა"
-
-msgid "Announce only"
-msgstr "მხოლოდ გამოცხადება"
-
-msgid "Switch only"
-msgstr "მხოლოდ გადართვა"
-
-msgid "Announce and Switch"
-msgstr "გამოცხადება და გადართვა"
-
-msgid "Announce via email"
-msgstr "ელფოსტით გამოცხადება"
-
-msgid "Inactive Record"
-msgstr "არააქტიური ჩანაწერი"
-
-msgid "Series recording"
-msgstr "სერიების ჩანაწერი"
-
-msgid "Delete recordings after ... days"
-msgstr "ჩანაწერების წაშლა ... დღის შემდეგ"
-
-msgid "Keep ... recordings"
-msgstr "ჩანაწერის შენახვა ... დღე"
-
-msgid "Pause when ... recordings exist"
-msgstr "შეჩერება, როცა ... ჩანაწერი არსებობს"
-
-msgid "Avoid repeats"
-msgstr "გამეორებების თავიდან აცილება"
-
-msgid "Allowed repeats"
-msgstr "გამეორებების დაშვება"
-
-msgid "Only repeats within ... days"
-msgstr "მხოლოდ ... დღეში ერთხელ მეორდება"
-
-msgid "Compare title"
-msgstr "სათაურის შედარება"
-
-msgid "Compare subtitle"
-msgstr "სუბტიტრების შედარება"
-
-msgid "if present"
-msgstr "თუ არსებობს"
-
-msgid "Compare summary"
-msgstr "მაინც შედარება"
-
-msgid "Compare"
-msgstr "შედარება"
-
-msgid "Auto-delete search timer"
-msgstr "ძებნის ტაიმერის ავტომატური წაშლა"
-
-msgid "after ... recordings"
-msgstr "... ჩანაწერის შემდეგ"
-
-msgid "after ... days after first rec."
-msgstr "პირველი ჩანაწერიდან ... დღეში."
-
-msgid "Switch ... minutes before start"
-msgstr "დაწყებამდე ... წუთით ადრე გადართვა"
-
-msgid "Test"
-msgstr "შემოწმება"
-
-msgid "No timer defined"
-msgstr "ტაიმერ აღწერილი არაა"
-
-msgid "Duration"
-msgstr ""
-
-msgid "Timer is recording."
-msgstr "ტაიმერი ჩანაწერია."
-
-msgid "Timer has a conflict."
-msgstr "ტაიმერის კონფლიქტი."
-
-msgid "Timer is active."
-msgstr "ტაიმერი აქტიურია."
-
-msgid "Toggle timer active/inactive"
-msgstr "ტაიმერის აქტივობის გადართვა"
-
-msgid "Delete timer"
-msgstr "ტაიმერის წაშლა"
-
-msgid "Timer conflicts"
-msgstr "ტაიმერის კონფლიქტები"
-
-msgid "Snapshot interval"
-msgstr "სწრაფი ასლის ინტერვალი"
-
-msgid "Stop"
-msgstr "შეჩერება"
-
-msgid "Please set login and password!"
-msgstr "მომხმარებლისა და პაროლის დაყენება აუცილებელია!"
-
-msgid "Setup saved."
-msgstr "პარამეტრები შენახულია."
-
-msgid "Setup"
-msgstr "მორგება"
-
-msgid "User management"
-msgstr "მომხმარებლების მართვა"
-
-msgid "Local net (no login required)"
-msgstr "ლოკალური ქსელი (შესვლის გარეშე)"
-
-msgid "Show live logo image"
-msgstr "ცოცხალი ლოგოს გამოსახულების ჩვენება"
-
-msgid "Use ajax technology"
-msgstr "AJAX ტექნოლოგიის გამოყენება"
-
-msgid "Show dynamic VDR information box"
-msgstr "დინამიკური VDR ინფორმაციის პანელის ჩვენება"
-
-msgid "Allow video streaming"
-msgstr "ვიდეო ნაკადის დაშვება"
-
-msgid "Web-Streaming h264"
-msgstr "ვებ-ნაკადი h264"
-
-msgid "Web-Streaming HEVC"
-msgstr "ვებ-ნაკადი HEVC"
-
-msgid "Web-Streaming MPEG2"
-msgstr "ვებ-ნაკადი MPEG2"
-
-msgid "Web-Streaming others"
-msgstr "სხვა ვებ-ნაკადები"
-
-msgid "Streamdev server port"
-msgstr "Streamdev-ის სერვერის პორტი"
-
-msgid "Streamdev stream type"
-msgstr "Streamdev-ის ნაკადის ტიპი"
-
-msgid "Mark new recordings"
-msgstr "ახალი ჩანაწერების დანიშვნა"
-
-msgid "Show link to IMDb in list views"
-msgstr "სიებში IMDB-ის ბმულების ჩვენება"
-
-msgid "Show \"Play in Mediaplayer\" in list views"
-msgstr "სიებში \"დაკვრის\" ჩვენება"
-
-msgid "Additional fixed times in 'What's on?'"
-msgstr "\"რა არის ჩართულიში\" დროის ჩასწორება"
-
-msgid "Format is HH:MM. Separate multiple times with a semicolon"
-msgstr "ფორმატია სს:წწ. დროები წერტილმძიმით გამოყავით"
-
-msgid "Channel groups for MultiSchedule"
-msgstr "არხის ჯგუფები მრავალიგანრგისთვის"
-
-msgid "Separate channels with a comma ',', separate groups with a semi-colon ';'"
-msgstr "არხები \",\" მძიმით, ჯგუფები კი წერტილმძიმით \";\" გამოყავით"
-
-msgid "Duration of MultiSchedule in hours"
-msgstr "მრავალი განრიგის ხანგრძლივობა საათებში"
-
-msgid "Show channels without EPG"
-msgstr "EPG-ის გარეშე არხების ჩვენება"
-
-msgid "Start page"
-msgstr "საწყისი გვერდი"
-
-msgid "Theme"
-msgstr "თემა"
-
-msgid "Search settings"
-msgstr "ძიების პარამეტრები"
-
-msgid "Extended search"
-msgstr "გაფართოებული ძებნა"
-
-msgid "no"
-msgstr "არა"
-
-msgid "Couldn't find recording. Maybe you mistyped your request?"
-msgstr "ჩანაწერი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
-
-msgid "Please set a name for the recording!"
-msgstr "ჩანაწერის სახელის მითითება აუცილებელია!"
-
-msgid "Cannot copy, rename or move the recording."
-msgstr "ჩანაწერის კოპირება, სახელის გადარქმევა და გადატანა შეუძლებელია."
-
-msgid "Edit recording"
-msgstr "ჩანაწერის ჩასწორება"
-
-msgid "Name"
-msgstr "სახელი"
-
-msgid "Create new directory"
-msgstr ""
-
-msgid "Delete resume information"
-msgstr "გაგრძელების ინფორმაციის წაშლა"
-
-msgid "Delete marks information"
-msgstr "ნიშნების ინფორმაციის წაშლა"
-
-msgid "Copy only"
-msgstr "მხოლოდ კოპირება"
-
-msgid "Short description"
-msgstr "მოკლე აღწერა"
-
-msgid "Auxiliary info"
-msgstr "დამატებითი ინფორმაცია"
-
-msgid "Expression"
-msgstr "გამოსახულება"
-
-msgid "Starts between"
-msgstr "დაწყების შუალედი"
-
-msgid "Toggle search timer actions (in)active"
-msgstr "ძებნის ტაიმერის ქმედებების გადართვა"
-
-msgid "Browse search timer results"
-msgstr "ძებნის ტაიმერის შედეგებში ძებნა"
-
-msgid "Delete this search timer?"
-msgstr "წავშალო ეს ძებნის ტაიმერი?"
-
-msgid "Delete search timer"
-msgstr "ძებნის ტაიმერის წაშლა"
-
-msgid "Trigger search timer update"
-msgstr "ძებნის ტაიმერის განახლების დაწყება"
-
-msgid "What's running on"
-msgstr "რა არის გაშვებული"
-
-msgid "at"
-msgstr "დრო"
-
-msgid "What's on next?"
-msgstr "შემდეგი?"
-
-msgid "Favorites"
-msgstr "რჩეულები"
-
-msgid "Next"
-msgstr "შემდეგი"
-
-msgid "What's on"
-msgstr "რას ვუკრავ"
-
-msgid "Details view"
-msgstr "დეტალური ხედი"
-
-msgid "List view"
-msgstr "სიის ხედი"
+msgid "Couldn't find channel or no channels available. Maybe you mistyped your request?"
+msgstr "არხი ვერ ვიპოვე ან არხები მიუწვდომელია. შეიძლება, თქვენი მოთხოვნა არასწორია?"
 
 msgid "Deleted recording:"
 msgstr "წაშლილია ჩანაწერი:"
-
-msgid "play this recording"
-msgstr "ამ ჩანაწერის დაკვრა"
-
-msgid "Delete this recording from hard disc!"
-msgstr "ამ ჩანაწერის დისკიდან წაშლა!"
 
 msgid "List of recordings"
 msgstr "ჩანაწერების სია"
@@ -1012,83 +906,169 @@ msgstr "ყველა საქაღალდის ამოკეცვა"
 msgid "Collapse all folders"
 msgstr "ყველა საქაღალდის ჩაკეცვა"
 
-msgid "Users"
-msgstr "მომხმარებლები"
-
-msgid "Edit user"
-msgstr "მომხმარებლის ჩასწორება"
-
-msgid "Delete user"
-msgstr "მომხმარებლის წაშლა"
-
-msgid "New user"
-msgstr "Ახალი მომხმარებელი"
-
-msgid "Page error"
-msgstr "გვერდის შეცდომა"
-
-msgid "Couldn't find user. Maybe you mistyped your request?"
-msgstr "მომხმარებელი ვერ ვიპოვე. შეიძლება, მოთხოვნა არასწორია?"
-
-msgid "This user name is already in use!"
-msgstr "ეს მომხმარებლის სახელი უკვე გამოიყენება!"
-
-msgid "User rights"
-msgstr "მომხმარებლის უფლებები"
-
-msgid "Edit setup"
-msgstr "პარამეტრების ჩასწორება"
-
-msgid "Add or edit timers"
-msgstr "ტაიმერების დამატება და ჩასწორება"
-
-msgid "Delete timers"
-msgstr "ტაიმერების წაშლა"
-
-msgid "Delete recordings"
-msgstr "ჩანაწერების წაშლა"
-
-msgid "Use remote menu"
-msgstr "დაშორებული მართვა"
-
-msgid "Start replay"
-msgstr "დაკვრის დაწყება"
-
-msgid "Switch channel"
-msgstr "არხის გადართვა"
-
-msgid "Add or edit search timers"
-msgstr "ტაიმერების დამატება და ჩასწორება"
-
-msgid "Delete search timers"
-msgstr "ძებნის ტაიმერების წაშლა"
-
-msgid "Edit recordings"
-msgstr "ჩანაწერების წაშლა"
-
-msgid "VLC: live video stream"
+#, c-format
+msgid "Delete recording \"%s\"?"
 msgstr ""
 
-msgid "VLC: play recording"
+msgid "Delete"
 msgstr ""
 
-msgid "Play"
+msgid "Snapshot interval"
+msgstr "სწრაფი ასლის ინტერვალი"
+
+msgid "Stop"
+msgstr "შეჩერება"
+
+msgid "No schedules available for this channel"
+msgstr "ამ არხისთვის გეგმა ხელმიუწვდომელია"
+
+msgid "No events available for this channel"
 msgstr ""
 
-msgid "Sound on"
+msgid "Search settings"
+msgstr "ძიების პარამეტრები"
+
+msgid "Extended search"
+msgstr "გაფართოებული ძებნა"
+
+msgid "no"
+msgstr "არა"
+
+msgid "Search results"
+msgstr "ძებნს შედეგები"
+
+msgid "No search results"
+msgstr "ძებნის შედეგების გარეშე"
+
+msgid "Expression"
+msgstr "გამოსახულება"
+
+msgid "Starts between"
+msgstr "დაწყების შუალედი"
+
+msgid "Toggle search timer actions (in)active"
+msgstr "ძებნის ტაიმერის ქმედებების გადართვა"
+
+msgid "Browse search timer results"
+msgstr "ძებნის ტაიმერის შედეგებში ძებნა"
+
+msgid "Delete this search timer?"
+msgstr "წავშალო ეს ძებნის ტაიმერი?"
+
+msgid "Delete search timer"
+msgstr "ძებნის ტაიმერის წაშლა"
+
+msgid "Trigger search timer update"
+msgstr "ძებნის ტაიმერის განახლების დაწყება"
+
+msgid "Please set login and password!"
+msgstr "მომხმარებლისა და პაროლის დაყენება აუცილებელია!"
+
+msgid "Setup saved."
+msgstr "პარამეტრები შენახულია."
+
+msgid "Setup"
+msgstr "მორგება"
+
+msgid "User management"
+msgstr "მომხმარებლების მართვა"
+
+msgid "Local net (no login required)"
+msgstr "ლოკალური ქსელი (შესვლის გარეშე)"
+
+msgid "IPv4 prefix"
 msgstr ""
 
-msgid "Sound off"
+msgid "Example: 192.168.178.0/24"
 msgstr ""
 
-msgid "Fullscreen"
+msgid "IPv6 prefix"
 msgstr ""
 
-msgid "Close"
+msgid "Example: 2003:ec:6f23:ee00:&#x200B;:/64"
 msgstr ""
 
-msgid "VLC media URL"
+msgid "Allow localhost"
 msgstr ""
+
+msgid "Show live logo image"
+msgstr "ცოცხალი ლოგოს გამოსახულების ჩვენება"
+
+msgid "Show dynamic VDR information box"
+msgstr "დინამიკური VDR ინფორმაციის პანელის ჩვენება"
+
+msgid "Allow video streaming"
+msgstr "ვიდეო ნაკადის დაშვება"
+
+msgid "Streamdev server port"
+msgstr "Streamdev-ის სერვერის პორტი"
+
+msgid "Streamdev stream type"
+msgstr "Streamdev-ის ნაკადის ტიპი"
+
+msgid "Mark new recordings"
+msgstr "ახალი ჩანაწერების დანიშვნა"
+
+msgid "Show link to IMDb in list views"
+msgstr "სიებში IMDB-ის ბმულების ჩვენება"
+
+msgid "Additional fixed times in 'What's on?'"
+msgstr "\"რა არის ჩართულიში\" დროის ჩასწორება"
+
+msgid "Format is HH:MM. Separate multiple times with a semicolon"
+msgstr "ფორმატია სს:წწ. დროები წერტილმძიმით გამოყავით"
+
+msgid "Channel groups for MultiSchedule"
+msgstr "არხის ჯგუფები მრავალიგანრგისთვის"
+
+msgid "5 channels per group"
+msgstr ""
+
+msgid "Channel groups as defined in VDR"
+msgstr ""
+
+msgid "All channels in one group"
+msgstr ""
+
+msgid "Individual channel groups"
+msgstr ""
+
+msgid "Channel groups"
+msgstr ""
+
+msgid "Separate channels with a comma ',', separate groups with a semi-colon ';'"
+msgstr "არხები \",\" მძიმით, ჯგუფები კი წერტილმძიმით \";\" გამოყავით"
+
+msgid "Duration of MultiSchedule in hours"
+msgstr "მრავალი განრიგის ხანგრძლივობა საათებში"
+
+msgid "Show channels without EPG"
+msgstr "EPG-ის გარეშე არხების ჩვენება"
+
+msgid "Start page"
+msgstr "საწყისი გვერდი"
+
+msgid "Theme"
+msgstr "თემა"
+
+msgid "Couldn't find recording or no recordings available. Maybe you mistyped your request?"
+msgstr ""
+
+#, c-format
+msgid "%a, %x"
+msgstr "%a, %x"
+
+msgid "View the schedule of this channel"
+msgstr "ამ არხის განრგის ნახვა"
+
+msgid " - "
+msgstr " - "
+
+msgid "Recording"
+msgstr ""
+
+msgid "Timer conflicts"
+msgstr "ტაიმერის კონფლიქტები"
 
 msgid "No timer conflicts"
 msgstr "ტაიმერის კონფლიქტების გარეშე"
@@ -1096,11 +1076,92 @@ msgstr "ტაიმერის კონფლიქტების გარ�
 msgid "local"
 msgstr "ლოკალური"
 
+msgid "Timer has a conflict."
+msgstr "ტაიმერის კონფლიქტი."
+
+msgid "Timer is active."
+msgstr "ტაიმერი აქტიურია."
+
+msgid "Transponder"
+msgstr ""
+
+msgid "Toggle timer active/inactive"
+msgstr "ტაიმერის აქტივობის გადართვა"
+
+msgid "Delete timer"
+msgstr "ტაიმერის წაშლა"
+
+msgid "No timer defined"
+msgstr "ტაიმერ აღწერილი არაა"
+
+msgid "Duration"
+msgstr ""
+
+msgid "Timer is recording."
+msgstr "ტაიმერი ჩანაწერია."
+
+msgid "Users"
+msgstr "მომხმარებლები"
+
+msgid "Delete user"
+msgstr "მომხმარებლის წაშლა"
+
+msgid "What's running on"
+msgstr "რა არის გაშვებული"
+
+msgid "at"
+msgstr "დრო"
+
+msgid "What's on next?"
+msgstr "შემდეგი?"
+
+msgid "Favorites"
+msgstr "რჩეულები"
+
+msgid "Next"
+msgstr "შემდეგი"
+
+msgid "What's on"
+msgstr "რას ვუკრავ"
+
+msgid "Details view"
+msgstr "დეტალური ხედი"
+
+msgid "List view"
+msgstr "სიის ხედი"
+
 msgid "Live Interactive VDR Environment"
 msgstr "ცოცხალი ინტერაქტიური VDR გარემო"
 
 msgid "No EPG information available"
 msgstr "EPG-ის ინფორმაცია მიუწვდომელია"
+
+#~ msgid "Couldn't acquire access to channels, please try again later."
+#~ msgstr "არხებთან წვდომის შეცდომა. მოგვიანებით სცადეთ."
+
+#~ msgid "Web-Streaming h264"
+#~ msgstr "ვებ-ნაკადი h264"
+
+#~ msgid "Web-Streaming HEVC"
+#~ msgstr "ვებ-ნაკადი HEVC"
+
+#~ msgid "Web-Streaming MPEG2"
+#~ msgstr "ვებ-ნაკადი MPEG2"
+
+#~ msgid "Web-Streaming others"
+#~ msgstr "სხვა ვებ-ნაკადები"
+
+#~ msgid "Error acquiring schedules lock"
+#~ msgstr "განრიგის ბლოკის მიღების შეცდომა"
+
+#~ msgid "Error acquiring schedules"
+#~ msgstr "განრიგის მიღების შეცდომა"
+
+#~ msgid "Show \"Play in Mediaplayer\" in list views"
+#~ msgstr "სიებში \"დაკვრის\" ჩვენება"
+
+#~ msgid "Use ajax technology"
+#~ msgstr "AJAX ტექნოლოგიის გამოყენება"
 
 #~ msgid "ERROR:"
 #~ msgstr "შეცდომა:"

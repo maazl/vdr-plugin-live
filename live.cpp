@@ -14,6 +14,7 @@
 #include "preload.h"
 #include "users.h"
 #include "services_live.h"
+#include "epgsearch.h"
 
 namespace vdrlive {
 
@@ -34,63 +35,69 @@ Plugin::Plugin(void)
 
 const char *Plugin::CommandLineHelp(void)
 {
-	return LiveSetup().CommandLineHelp();
+  return LiveSetup().CommandLineHelp();
 }
 
 bool Plugin::ProcessArgs(int argc, char *argv[])
 {
-	return LiveSetup().ParseCommandLine( argc, argv );
+  return LiveSetup().ParseCommandLine( argc, argv );
 }
 
 bool Plugin::Initialize(void)
 {
-	return LiveSetup().Initialize();
+  m_configDirectory = canonicalize_file_name(cPlugin::ConfigDirectory( PLUGIN_NAME_I18N ));
+  m_resourceDirectory = canonicalize_file_name(cPlugin::ResourceDirectory( PLUGIN_NAME_I18N ));
+
+  return LiveSetup().Initialize();
 }
 
 bool Plugin::Start(void)
 {
-	m_configDirectory = canonicalize_file_name(cPlugin::ConfigDirectory( PLUGIN_NAME_I18N ));
-	m_resourceDirectory = canonicalize_file_name(cPlugin::ResourceDirectory( PLUGIN_NAME_I18N ));
+  // force status monitor startup
+  LiveStatusMonitor();
 
-	// force status monitor startup
-	LiveStatusMonitor();
+  // preload files into file Cache
+  PreLoadFileCache(m_resourceDirectory);
 
-	// preload files into file Cache
-	PreLoadFileCache(m_resourceDirectory);
+  // load users
+  Users.Load(AddDirectory(m_configDirectory.c_str(), "users.conf"), true);
 
-	// load users
-	Users.Load(AddDirectory(m_configDirectory.c_str(), "users.conf"), true);
+  // XXX error handling
+  m_thread.reset( new ServerThread );
+  m_thread->Start();
 
-	// XXX error handling
-	m_thread.reset( new ServerThread );
-	m_thread->Start();
-	return true;
+  m_liveWorker.reset( new cLiveWorker );
+  m_liveWorker->Start();
+
+  return true;
 }
 
 void Plugin::Stop(void)
 {
-	m_thread->Stop();
+  m_thread->Stop();
+  while (m_liveWorker->Active()) {
+    m_liveWorker->Stop();
+    sleep(1);
+  }
 }
 
-void Plugin::MainThreadHook(void)
-{
-	LiveTimerManager().DoPendingWork();
-	LiveTaskManager().DoScheduledTasks();
+void Plugin::Housekeeping(void) {
+  SearchResults::CleanQuery();
 }
 
 cString Plugin::Active(void)
 {
-	return NULL;
+  return NULL;
 }
 
 cMenuSetupPage *Plugin::SetupMenu(void)
 {
-	return new cMenuSetupLive();
+  return new cMenuSetupLive();
 }
 
 bool Plugin::SetupParse(const char *Name, const char *Value)
 {
-	return LiveSetup().ParseSetupEntry( Name, Value );
+  return LiveSetup().ParseSetupEntry( Name, Value );
 }
 
 class cLiveImageProviderImp: public cLiveImageProvider {
@@ -99,7 +106,7 @@ class cLiveImageProviderImp: public cLiveImageProvider {
       if (LiveSetup().GetTvscraperImageDir().empty() || LiveSetup().GetServerUrl().empty()) {
         if (m_errorMessages) {
           if (LiveSetup().GetTvscraperImageDir().empty() )
-            esyslog("live: ERROR please provide -t <dir>, --tvscraperimages=<dir>");
+            esyslog("live: ERROR plugin tvscraper/scraper2vdr missing or to old. tvscraper 1.2.1 or later is required");
           if (LiveSetup().GetServerUrl().empty() )
             esyslog("live: ERROR please provide -u URL,  --url=URL");
         }

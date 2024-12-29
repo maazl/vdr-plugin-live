@@ -10,10 +10,18 @@ using namespace vdrlive;
 
 </%pre>
 <%args>
-	std::string param;
-	std::string async;
+  std::string param;
+  std::string async;
 </%args>
+<%session scope="global">
+bool logged_in(false);
+</%session>
 <%cpp>
+  if (!logged_in && LiveSetup().UseAuth()) {
+    cToSvConcat<0> targetUrl = "/login.html?redirect=";
+    targetUrl.appendUrlEscaped(request.getQuery());
+    return reply.redirect(targetUrl.data());
+  }
   RecordingsManagerPtr recordings = LiveRecordingsManager();
   const cRecording *recording = recordings->GetByMd5Hash(param);
   if (recording == nullptr) {
@@ -26,15 +34,15 @@ using namespace vdrlive;
     throw HtmlError( tr("Sorry, no permission. Please contact your administrator!") );
   }
 
-	bool ajaxReq = !async.empty() && (parse_int<int>(async) != 0);
-	std::string referrer;
+  bool ajaxReq = !async.empty() && (parse_int<int>(async) != 0);
+  std::string referrer;
 
-	if (ajaxReq) {
-		reply.setContentType( "application/xml" );
-	}
-	else {
-		referrer = request.getHeader("Referer:");
-	}
+  if (ajaxReq) {
+    reply.setContentType( "application/xml" );
+  }
+  else {
+    referrer = request.getHeader("Referer:");
+  }
 
   RemoveRecordingTask task(param);
   LiveTaskManager().Execute(task);
@@ -47,21 +55,22 @@ using namespace vdrlive;
     result = "error";
   }
 
-	if (!ajaxReq) {
-		if (!referrer.empty()) {
-			return reply.redirect(referrer);
-		}
+  if (!ajaxReq) {
+    if (!referrer.empty() && referrer.find("login") == std::string::npos) {
+      return reply.redirect(referrer);
+    }
 </%cpp>
-Normale Seite:<br/>
-recording: <$ recording->Name()  $><br/>
-result: <$ result $><br/>
-error: <$ (task.Error()) $><br />
-Seitenende!
+<b>Delete-Recording Request</b>
+<hr/>
+Recording: <$ recording->Name() $><br/>
+Result:    <$ result $><br/>
+Error:     <$ !task.Error().empty() ? task.Error() : "—" $>
+<hr/>
 <%cpp>
-	}
-	else {
+  }
+  else {
 </%cpp>
 <& xmlresponse.ajax name=("delete_recording") pname=("recording") value=(recording->Name()) result=(task.Result()) error=(task.Error()) &>
 <%cpp>
-	}
+  }
 </%cpp>

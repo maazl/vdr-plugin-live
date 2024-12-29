@@ -15,10 +15,14 @@ int height = 320;
 bool logged_in(false);
 </%session>
 <%cpp>
-if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
-	reply.setContentType("image/jpg");
+  if (!logged_in && LiveSetup().UseAuth()) {
+    cToSvConcat<0> targetUrl = "/login.html?redirect=";
+    targetUrl.appendUrlEscaped(request.getQuery());
+    return reply.redirect(targetUrl.data());
+  }
+  reply.setContentType("image/jpg");
 
-	GrabImageInfo image = LiveGrabImageManager().GetImage();
-	if ( image.second > 0 )
-		reply.out().write( image.first.get(), image.second );
+  GrabImageInfo image = LiveGrabImageManager().GetImage();
+  if ( image.second > 0 )
+    reply.out().write( image.first.get(), image.second );
 </%cpp>

@@ -31,11 +31,9 @@ off_t RecSize(cRecording const * recording)
 bool logged_in(false);
 </%session>
 <%cpp>
-//if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
-
 cRecording const * recording = LiveRecordingsManager()->GetByMd5Hash(recid);
 if (recording) {
-	reply.setContentType("video/mpeg");
+  reply.setContentType("video/mpeg");
     reply.setKeepAliveHeader();
     reply.setContentLengthHeader(RecSize(recording));
     reply.setDirectMode();
