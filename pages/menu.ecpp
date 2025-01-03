@@ -24,11 +24,15 @@ std::string set_component;
 </%request>
 
 <%cpp>
-if (!logged_in && LiveSetup().UseAuth()) return reply.redirect("login.html");
+if (!logged_in && LiveSetup().UseAuth()) {
+  cToSvConcat<0> targetUrl = "/login.html?redirect=";
+  targetUrl.appendUrlEscaped(request.getQuery());
+  return reply.redirect(targetUrl.data());
+}
 
 set_active = active;
 if (!component.empty()) {
-	set_component = component;
+  set_component = component;
 }
 
 </%cpp>
@@ -41,7 +45,7 @@ if (!component.empty()) {
 if ( LiveFeatures<features::epgsearch>().Recent() ) {
 </%cpp>
   | <a href="searchepg.html"<& menu.setactive current=("searchepg") &>><$ tr("Search") $></a>
-  | <a href="searchtimers.html"<& menu.setactive current=("searchtimers") &>><$ tr("Searchtimers") $></a>
+  | <a href="searchtimers.html"<& menu.setactive current=("searchtimers") &>><$ tr("Search timers") $></a>
 <%cpp>
 }
 </%cpp>
@@ -49,7 +53,7 @@ if ( LiveFeatures<features::epgsearch>().Recent() ) {
   | <a href="recordings.html?flat=true&filter=<$filter$>"<& menu.setactive current=("recordings_flat") &>><$ tr("Recordings (flat)") $></a>
   | <a href="remote.html"<& menu.setactive current=("remote") &>><$ tr("Remote Control") $></a>
 <%cpp>
-if (LiveSetup().GetUseStreamdev()) {
+if (LiveSetup().GetUseStreamdev() && LiveFeatures<features::streamdev_server>().Loaded()) {
 </%cpp>
   | <a href="stream.html"<& menu.setactive current=("stream") &>><$ tr("Web-Streaming") $></a>
 <%cpp>
@@ -66,16 +70,16 @@ if (LiveSetup().UseAuth()) {
 <%cpp>
 }
 </%cpp>
-	| <a <& tooltip.display domId=("aboutBox") &>>?</a>
+  | <a <& tooltip.display domId=("aboutBox") &>>?</a>
 </div>
 <div id="messagebar" class="<? !timerNotifier.ShouldNotify() ? "notpresent" ?>">
   <div> <!-- outer -->
-	<div><!-- inner -->
-	  <$ tr("Your attention is required") $>:
-	  <span id="mbmessage"><$ timerNotifier.Message() $></span>
-	  <a id="mbreact" href="<$ timerNotifier.Url() $>"><$ tr("React") $></a>
+  <div><!-- inner -->
+    <$ tr("Your attention is required") $>:
+    <span id="mbmessage"><$ timerNotifier.Message() $></span>
+    <a id="mbreact" href="<$ timerNotifier.Url() $>"><$ tr("React") $></a>
       <span id="mbdelimiter" class="<? timerNotifier.Url().empty() ? "notpresent" ?>">|</span>
-	  <span id="mbdismiss"><a href="" onclick="$('messagebar').addClass('notpresent'); return false"><$ tr("Dismiss") $></a></span>
+    <span id="mbdismiss"><a href="" onclick="$('messagebar').addClass('notpresent'); return false"><$ tr("Dismiss") $></a></span>
     </div>
   </div>
 </div>
@@ -85,24 +89,24 @@ if (!component.empty()) {
 <div id="pagemenu">
   <div> <!-- outer -->
     <div> <!-- inner -->
-	  <& menu.component current=("whats_on") &>
-	  <& menu.component current=("schedule") &>
-	  <& menu.component current=("multischedule") &>
-	  <& menu.component current=("timers") &>
+    <& menu.component current=("whats_on") &>
+    <& menu.component current=("schedule") &>
+    <& menu.component current=("multischedule") &>
+    <& menu.component current=("timers") &>
 <%cpp>
-	if (LiveFeatures<features::epgsearch>().Recent()) {
+  if (LiveFeatures<features::epgsearch>().Recent()) {
 </%cpp>
-	  <& menu.component current=("search") &>
-	  <& menu.component current=("searchepg") &>
-	  <& menu.component current=("searchtimers") &>
+    <& menu.component current=("search") &>
+    <& menu.component current=("searchepg") &>
+    <& menu.component current=("searchtimers") &>
 <%cpp>
-	}
+  }
 </%cpp>
-	  <& menu.component current=("recordings") &>
-	  <& menu.component current=("recordings_flat") &>
-	  <& menu.component current=("remote") &>
-	  <& menu.component current=("stream") &>
-	  <& menu.component current=("users") &>
+    <& menu.component current=("recordings") &>
+    <& menu.component current=("recordings_flat") &>
+    <& menu.component current=("remote") &>
+    <& menu.component current=("stream") &>
+    <& menu.component current=("users") &>
     </div>
   </div>
 </div>
