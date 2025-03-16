@@ -53,7 +53,7 @@ if (!logged_in && LiveSetup().UseAuth()) {
           for (std::list< TimerInConflict >::const_iterator confltimer = conflTimers.begin(); confltimer != conflTimers.end(); ++confltimer) {
 </%cpp>
             <tr class="head">
-              <td colspan="12">
+              <td colspan="13">
                 <div class="boxheader"><div><div><$ concat(cToSvDateTime(tr("%A, %x"), conflict->ConflictTime()), " ", cToSvDateTime(tr("%I:%M %p"), conflict->ConflictTime()), " - ", cToSvInt(confltimer->percentage), "%") $><span style="float:right;"><diff><$ tr("Server")$>: <$ (confltimer->remote == "" ) ? tr("local") : confltimer->remote $> </diff></span></div></div></div>
               </td>
             </tr>
@@ -65,6 +65,7 @@ if (!logged_in && LiveSetup().UseAuth()) {
               <td class="td-hidden-xs"><div class="withmargin hidden-xs"><$ trVDR("Duration")  $></div></td>
               <td class="td-hidden-xs"><div class="withmargin hidden-xs"><$ trVDR("Priority") $></div></td>
               <td><div class="withmargin"><$ trVDR("File") $></div></td>
+              <td class="td-hidden-xs"><div class="withmargin hidden-xs"><$ tr("Short description") $></div></td>
               <td><div class="withmargin"><$ tr("Search timer") $></div></td>
                 <td class="td-hidden-xs"><img class="hidden-xs action-rightcol" src="img/transparent.png" alt="" width="16px" height="16px" /></td>
               <td class="td-hidden-xs"><img class="hidden-xs action-rightcol" src="img/transparent.png" alt="" width="16px" height="16px" /></td>
@@ -93,6 +94,7 @@ if (!logged_in && LiveSetup().UseAuth()) {
               }
 
               EpgInfoPtr epgEvent;
+              cToSvConcat shortDescription;
               cToSvConcat longDescription;
               cToSvConcat searchTimName;
               std::string searchTimId;
@@ -109,6 +111,11 @@ if (!logged_in && LiveSetup().UseAuth()) {
               if (timer->Event()) {
                 epgEvent = EpgEvents::CreateEpgInfo(timer->Channel(), timer->Event());
                 bool truncated = false;
+                if (!epgEvent->ShortDescr().empty()) {
+                  AppendHtmlEscapedAndCorrectNonUTF8(shortDescription, StringWordTruncate(epgEvent->ShortDescr(), 100, truncated));
+                  if (truncated) shortDescription << " &2026;";
+                }
+                truncated = false;
                 if (!epgEvent->LongDescr().empty()) {
                   longDescription << "<hr>";
                   AppendHtmlEscapedAndCorrectNonUTF8(longDescription, StringWordTruncate(epgEvent->LongDescr(), LiveSetup().GetMaxTooltipChars(), truncated));
@@ -143,6 +150,7 @@ if (!logged_in && LiveSetup().UseAuth()) {
                  <$$ cToSvReplace(timerFile, "~", "~<wbr>") $>
 %               }
                 </div></td>
+                <td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><div class="hidden-xs withmargin"><$ shortDescription $></div></td>
 
                 <td class="<? bottom ? "bottomrow" ?>"><div class="withmargin">
 %                if ( !timer->Local() || searchTimId.empty() ) {

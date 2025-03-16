@@ -111,6 +111,7 @@ using namespace vdrlive;
         for (int i = 0; i < sortedTimers.Size(); i++) {
           const cTimer *timer = sortedTimers[i];
           EpgInfoPtr epgEvent = 0;
+          cToSvConcat shortDescription;
           cToSvConcat longDescription;
           cToSvConcat searchTimName;
           std::string searchTimId;
@@ -122,10 +123,15 @@ using namespace vdrlive;
           {
             epgEvent = EpgEvents::CreateEpgInfo(timer->Channel(), timer->Event());
             bool truncated = false;
+            if (!epgEvent->ShortDescr().empty()) {
+              AppendHtmlEscapedAndCorrectNonUTF8(shortDescription, StringWordTruncate(epgEvent->ShortDescr(), 100, truncated));
+              if (truncated) shortDescription << " &2026;";
+            }
+            truncated = false;
             if (!epgEvent->LongDescr().empty()) {
               longDescription << "<hr>";
               AppendHtmlEscapedAndCorrectNonUTF8(longDescription, StringWordTruncate(epgEvent->LongDescr(), LiveSetup().GetMaxTooltipChars(), truncated));
-              if (truncated) longDescription << " ...";
+              if (truncated) longDescription << " &2026;";
             }
           }
           AppendHtmlEscapedAndCorrectNonUTF8(searchTimName, SortedTimers::SearchTimerInfo(*timer, "searchtimer"));
@@ -151,7 +157,7 @@ using namespace vdrlive;
             previousDay = currentDay;
 </%cpp>
         <tr class="head">
-          <td colspan="12">
+          <td colspan="13">
             <div class="boxheader"><div><div>
               <$ currentDay $>
             </div></div></div>
@@ -165,6 +171,7 @@ using namespace vdrlive;
           <td class="td-hidden-xs"><div class="withmargin hidden-xs"><$ tr("Duration") $></div></td>
           <td class="td-hidden-xs"><div class="withmargin hidden-xs"><$ trVDR("Priority") $></div></td>
           <td><div class="withmargin"><$ trVDR("File") $></div></td>
+          <td class="td-hidden-xs"><div class="withmargin hidden-xs"><$ tr("Short description") $></div></td>
           <td class="td-hidden-xs <? noRemoteTimers ? "notpresent" ?>"><div class="xs-nomargin hidden-xs"><$ trVDR("Record on") $></div></td>
           <td class="<? noSearchTimers ? "notpresent" ?>"><div class="withmargin"><$ tr("Search timer") $></div></td>
 
@@ -216,6 +223,7 @@ using namespace vdrlive;
 %         }
             </div>
           </td>
+          <td class="<? bottom ? "bottomrow" ?> td-hidden-xs"><div class="hidden-xs withmargin" <$$longDescriptionTitle$> ><$ shortDescription $></div></td>
           <td class="<? bottom ? "bottomrow" ?> <? noRemoteTimers ? "notpresent" ?> td-hidden-xs"><div class="xs-nomargin"><$ timer->Local()?trVDR(" "):timer->Remote() $></div></td>
           <td class="<? bottom ? "bottomrow" ?> <? noSearchTimers ? "notpresent" ?>"><div class="withmargin">
 %          if ( !timer->Local() || searchTimId.empty() ) {
